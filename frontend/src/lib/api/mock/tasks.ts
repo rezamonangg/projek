@@ -1,0 +1,54 @@
+import type { ApiResponse } from '../types';
+import type { Task } from '$lib/types/api';
+import { mockResponse } from './utils';
+import { generateMockTask } from './generators';
+
+const mockTasks: Task[] = [
+	generateMockTask({
+		id: 'task-1',
+		title: 'Design homepage hero section',
+		description: 'Create the hero section design with carousel',
+		status: 'inprogress',
+		boardId: 'board-1',
+		epicId: 'epic-1',
+		assigneeId: 'user-1',
+		labels: ['design'],
+		position: 0
+	}),
+	generateMockTask({
+		id: 'task-2',
+		title: 'Implement navigation component',
+		description: 'Build responsive navigation with dropdown menus',
+		status: 'todo',
+		boardId: 'board-1',
+		epicId: 'epic-1',
+		assigneeId: 'user-2',
+		labels: ['frontend'],
+		position: 0
+	}),
+	generateMockTask({
+		id: 'task-3',
+		title: 'Set up authentication flow',
+		description: 'Implement login, logout, and registration',
+		status: 'done',
+		boardId: 'board-1',
+		epicId: 'epic-3',
+		assigneeId: 'user-1',
+		labels: ['backend', 'security'],
+		position: 0
+	}),
+	generateMockTask({
+		id: 'task-4',
+		title: 'Create API documentation',
+		description: 'Document all REST endpoints',
+		status: 'backlog',
+		boardId: 'board-1',
+		labels: ['documentation'],
+		position: 0
+	})
+];
+
+export async function listTasks(boardId: string): Promise<ApiResponse<Task[]>> {
+	const tasks = mockTasks.filter((t) => t.boardId === boardId);
+	return mockResponse(tasks);
+}
