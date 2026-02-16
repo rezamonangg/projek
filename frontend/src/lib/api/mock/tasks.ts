@@ -3,7 +3,7 @@ import type { Task } from '$lib/types/api';
 import { mockResponse, generateId } from './utils';
 import { generateMockTask } from './generators';
 
-const mockTasks: Task[] = [
+export const mockTasks: Task[] = [
 	generateMockTask({
 		id: 'task-1',
 		title: 'Design homepage hero section',

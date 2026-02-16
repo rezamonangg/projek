@@ -1,7 +1,8 @@
 import type { ApiResponse } from '../types';
-import type { Label } from '$lib/types/api';
+import type { Label, Task } from '$lib/types/api';
 import { mockResponse, generateId } from './utils';
 import { generateMockLabel } from './generators';
+import { mockTasks } from './tasks';
 
 const mockLabels: Label[] = [
 	generateMockLabel({
@@ -56,4 +57,25 @@ export async function createLabel(input: CreateLabelInput): Promise<ApiResponse<
 	});
 	mockLabels.push(newLabel);
 	return mockResponse(newLabel);
+}
+
+export async function assignLabelToTask(
+	taskId: string,
+	labelId: string
+): Promise<ApiResponse<Task>> {
+	const taskIndex = mockTasks.findIndex((t) => t.id === taskId);
+	if (taskIndex === -1) {
+		return mockResponse(null as unknown as Task);
+	}
+
+	const label = mockLabels.find((l) => l.id === labelId);
+	if (!label) {
+		return mockResponse(null as unknown as Task);
+	}
+
+	if (!mockTasks[taskIndex].labels.includes(labelId)) {
+		mockTasks[taskIndex].labels.push(labelId);
+	}
+
+	return mockResponse(mockTasks[taskIndex]);
 }
