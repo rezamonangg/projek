@@ -77,3 +77,27 @@ export async function createTask(input: CreateTaskInput): Promise<ApiResponse<Ta
 	mockTasks.push(newTask);
 	return mockResponse(newTask);
 }
+
+interface UpdateTaskInput {
+	title?: string;
+	description?: string;
+	status?: 'backlog' | 'todo' | 'inprogress' | 'done';
+	assigneeId?: string;
+	epicId?: string;
+	labels?: string[];
+}
+
+export async function updateTask(id: string, input: UpdateTaskInput): Promise<ApiResponse<Task>> {
+	const index = mockTasks.findIndex((t) => t.id === id);
+	if (index === -1) {
+		return mockResponse(null as unknown as Task);
+	}
+
+	mockTasks[index] = {
+		...mockTasks[index],
+		...input,
+		updatedAt: new Date().toISOString()
+	};
+
+	return mockResponse(mockTasks[index]);
+}
