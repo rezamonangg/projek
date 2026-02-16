@@ -3,6 +3,7 @@ package common
 import (
 	"encoding/json"
 	"net/http"
+	"time"
 )
 
 type APIResponse struct {
@@ -16,10 +17,20 @@ type APIError struct {
 	Message string `json:"message"`
 }
 
+func Now() time.Time {
+	return time.Now()
+}
+
 func WriteJSON(w http.ResponseWriter, status int, data interface{}) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
-	json.NewEncoder(w).Encode(data)
+	if data != nil {
+		json.NewEncoder(w).Encode(data)
+	}
+}
+
+func ParseJSON(r *http.Request, v interface{}) error {
+	return json.NewDecoder(r.Body).Decode(v)
 }
 
 func Success(w http.ResponseWriter, status int, data interface{}) {
