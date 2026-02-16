@@ -1,6 +1,6 @@
-import type { ApiResponse } from '../types';
+import type { ApiResponse, ILabelsApi, CreateLabelInput } from '../types';
 import type { Label, Task } from '$lib/types/api';
-import { mockResponse, generateId } from './utils';
+import { mockResponse, mockError, generateId } from './utils';
 import { generateMockLabel } from './generators';
 import { mockTasks } from './tasks';
 
@@ -37,18 +37,12 @@ const mockLabels: Label[] = [
 	})
 ];
 
-export async function listLabels(communityId: string): Promise<ApiResponse<Label[]>> {
+async function listLabels(communityId: string): Promise<ApiResponse<Label[]>> {
 	const labels = mockLabels.filter((l) => l.communityId === communityId);
 	return mockResponse(labels);
 }
 
-interface CreateLabelInput {
-	name: string;
-	color: string;
-	communityId: string;
-}
-
-export async function createLabel(input: CreateLabelInput): Promise<ApiResponse<Label>> {
+async function createLabel(input: CreateLabelInput): Promise<ApiResponse<Label>> {
 	const newLabel = generateMockLabel({
 		id: generateId(),
 		name: input.name,
@@ -59,18 +53,18 @@ export async function createLabel(input: CreateLabelInput): Promise<ApiResponse<
 	return mockResponse(newLabel);
 }
 
-export async function assignLabelToTask(
+async function assignLabelToTask(
 	taskId: string,
 	labelId: string
 ): Promise<ApiResponse<Task>> {
 	const taskIndex = mockTasks.findIndex((t) => t.id === taskId);
 	if (taskIndex === -1) {
-		return mockResponse(null as unknown as Task);
+		return mockError('Task not found', 404);
 	}
 
 	const label = mockLabels.find((l) => l.id === labelId);
 	if (!label) {
-		return mockResponse(null as unknown as Task);
+		return mockError('Label not found', 404);
 	}
 
 	if (!mockTasks[taskIndex].labels.includes(labelId)) {
@@ -79,3 +73,9 @@ export async function assignLabelToTask(
 
 	return mockResponse(mockTasks[taskIndex]);
 }
+
+export const mockLabelsApi: ILabelsApi = {
+	listLabels,
+	createLabel,
+	assignLabelToTask
+};

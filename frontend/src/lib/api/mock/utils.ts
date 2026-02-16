@@ -1,4 +1,4 @@
-import type { ApiResponse } from './types';
+import type { ApiResponse } from '../types';
 
 const MOCK_DELAY_MIN = 200;
 const MOCK_DELAY_MAX = 800;

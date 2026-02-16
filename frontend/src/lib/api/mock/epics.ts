@@ -1,6 +1,6 @@
-import type { ApiResponse } from '../types';
+import type { ApiResponse, IEpicsApi, CreateEpicInput, UpdateEpicInput } from '../types';
 import type { Epic } from '$lib/types/api';
-import { mockResponse, generateId } from './utils';
+import { mockResponse, mockError, generateId } from './utils';
 import { generateMockEpic } from './generators';
 
 const mockEpics: Epic[] = [
@@ -27,19 +27,12 @@ const mockEpics: Epic[] = [
 	})
 ];
 
-export async function listEpics(projectId: string): Promise<ApiResponse<Epic[]>> {
+async function listEpics(projectId: string): Promise<ApiResponse<Epic[]>> {
 	const epics = mockEpics.filter((e) => e.projectId === projectId);
 	return mockResponse(epics);
 }
 
-interface CreateEpicInput {
-	name: string;
-	description: string;
-	color: string;
-	projectId: string;
-}
-
-export async function createEpic(input: CreateEpicInput): Promise<ApiResponse<Epic>> {
+async function createEpic(input: CreateEpicInput): Promise<ApiResponse<Epic>> {
 	const newEpic = generateMockEpic({
 		id: generateId(),
 		name: input.name,
@@ -51,16 +44,10 @@ export async function createEpic(input: CreateEpicInput): Promise<ApiResponse<Ep
 	return mockResponse(newEpic);
 }
 
-interface UpdateEpicInput {
-	name?: string;
-	description?: string;
-	color?: string;
-}
-
-export async function updateEpic(id: string, input: UpdateEpicInput): Promise<ApiResponse<Epic>> {
+async function updateEpic(id: string, input: UpdateEpicInput): Promise<ApiResponse<Epic>> {
 	const index = mockEpics.findIndex((e) => e.id === id);
 	if (index === -1) {
-		return mockResponse(null as unknown as Epic);
+		return mockError('Epic not found', 404);
 	}
 
 	mockEpics[index] = {
@@ -70,3 +57,18 @@ export async function updateEpic(id: string, input: UpdateEpicInput): Promise<Ap
 
 	return mockResponse(mockEpics[index]);
 }
+
+async function deleteEpic(id: string): Promise<ApiResponse<void>> {
+	const index = mockEpics.findIndex((e) => e.id === id);
+	if (index !== -1) {
+		mockEpics.splice(index, 1);
+	}
+	return mockResponse(undefined);
+}
+
+export const mockEpicsApi: IEpicsApi = {
+	listEpics,
+	createEpic,
+	updateEpic,
+	deleteEpic
+};

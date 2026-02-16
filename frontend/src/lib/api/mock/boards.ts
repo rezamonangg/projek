@@ -1,6 +1,6 @@
-import type { ApiResponse } from '../types';
+import type { ApiResponse, IBoardsApi, CreateBoardInput } from '../types';
 import type { Board } from '$lib/types/api';
-import { mockResponse, generateId } from './utils';
+import { mockResponse, mockError, generateId } from './utils';
 import { generateMockBoard } from './generators';
 
 const mockBoards: Board[] = [
@@ -24,18 +24,20 @@ const mockBoards: Board[] = [
 	})
 ];
 
-export async function listBoards(projectId: string): Promise<ApiResponse<Board[]>> {
+async function listBoards(projectId: string): Promise<ApiResponse<Board[]>> {
 	const boards = mockBoards.filter((b) => b.projectId === projectId);
 	return mockResponse(boards);
 }
 
-interface CreateBoardInput {
-	name: string;
-	description?: string;
-	projectId: string;
+async function getBoard(id: string): Promise<ApiResponse<Board>> {
+	const board = mockBoards.find((b) => b.id === id);
+	if (!board) {
+		return mockError('Board not found', 404);
+	}
+	return mockResponse(board);
 }
 
-export async function createBoard(input: CreateBoardInput): Promise<ApiResponse<Board>> {
+async function createBoard(input: CreateBoardInput): Promise<ApiResponse<Board>> {
 	const newBoard = generateMockBoard({
 		id: generateId(),
 		name: input.name,
@@ -46,10 +48,8 @@ export async function createBoard(input: CreateBoardInput): Promise<ApiResponse<
 	return mockResponse(newBoard);
 }
 
-export async function getBoard(id: string): Promise<ApiResponse<Board>> {
-	const board = mockBoards.find((b) => b.id === id);
-	if (!board) {
-		return mockResponse(null as unknown as Board);
-	}
-	return mockResponse(board);
-}
+export const mockBoardsApi: IBoardsApi = {
+	listBoards,
+	getBoard,
+	createBoard
+};

@@ -1,6 +1,6 @@
-import type { ApiResponse } from '../types';
+import type { ApiResponse, IFilesApi, UploadFileOptions, ListAttachmentsOptions } from '../types';
 import type { Attachment } from '$lib/types/api';
-import { mockResponse, generateId } from './utils';
+import { mockResponse, mockError, generateId } from './utils';
 import { generateMockAttachment } from './generators';
 
 const mockAttachments: Attachment[] = [
@@ -24,9 +24,9 @@ const mockAttachments: Attachment[] = [
 	})
 ];
 
-export async function uploadFile(
+async function uploadFile(
 	file: File,
-	options: { taskId?: string; wikiPageId?: string; uploadedBy: string }
+	options: UploadFileOptions
 ): Promise<ApiResponse<Attachment>> {
 	const newAttachment = generateMockAttachment({
 		id: generateId(),
@@ -42,20 +42,17 @@ export async function uploadFile(
 	return mockResponse(newAttachment);
 }
 
-export async function downloadFile(id: string): Promise<ApiResponse<Blob>> {
+async function downloadFile(id: string): Promise<ApiResponse<Blob>> {
 	const attachment = mockAttachments.find((a) => a.id === id);
 	if (!attachment) {
-		return mockResponse(null as unknown as Blob);
+		return mockError('File not found', 404);
 	}
 
 	const blob = new Blob(['Mock file content'], { type: attachment.mimeType });
 	return mockResponse(blob);
 }
 
-export async function listAttachments(options: {
-	taskId?: string;
-	wikiPageId?: string;
-}): Promise<ApiResponse<Attachment[]>> {
+async function listAttachments(options: ListAttachmentsOptions): Promise<ApiResponse<Attachment[]>> {
 	let attachments = mockAttachments;
 	if (options.taskId) {
 		attachments = attachments.filter((a) => a.taskId === options.taskId);
@@ -65,3 +62,9 @@ export async function listAttachments(options: {
 	}
 	return mockResponse(attachments);
 }
+
+export const mockFilesApi: IFilesApi = {
+	uploadFile,
+	downloadFile,
+	listAttachments
+};

@@ -1,6 +1,6 @@
-import type { ApiResponse } from '../types';
+import type { ApiResponse, ITasksApi, CreateTaskInput, UpdateTaskInput, MoveTaskInput } from '../types';
 import type { Task } from '$lib/types/api';
-import { mockResponse, generateId } from './utils';
+import { mockResponse, mockError, generateId } from './utils';
 import { generateMockTask } from './generators';
 
 export const mockTasks: Task[] = [
@@ -48,21 +48,12 @@ export const mockTasks: Task[] = [
 	})
 ];
 
-export async function listTasks(boardId: string): Promise<ApiResponse<Task[]>> {
+async function listTasks(boardId: string): Promise<ApiResponse<Task[]>> {
 	const tasks = mockTasks.filter((t) => t.boardId === boardId);
 	return mockResponse(tasks);
 }
 
-interface CreateTaskInput {
-	title: string;
-	description: string;
-	boardId: string;
-	epicId?: string;
-	assigneeId?: string;
-	labels?: string[];
-}
-
-export async function createTask(input: CreateTaskInput): Promise<ApiResponse<Task>> {
+async function createTask(input: CreateTaskInput): Promise<ApiResponse<Task>> {
 	const newTask = generateMockTask({
 		id: generateId(),
 		title: input.title,
@@ -78,19 +69,10 @@ export async function createTask(input: CreateTaskInput): Promise<ApiResponse<Ta
 	return mockResponse(newTask);
 }
 
-interface UpdateTaskInput {
-	title?: string;
-	description?: string;
-	status?: 'backlog' | 'todo' | 'inprogress' | 'done';
-	assigneeId?: string;
-	epicId?: string;
-	labels?: string[];
-}
-
-export async function updateTask(id: string, input: UpdateTaskInput): Promise<ApiResponse<Task>> {
+async function updateTask(id: string, input: UpdateTaskInput): Promise<ApiResponse<Task>> {
 	const index = mockTasks.findIndex((t) => t.id === id);
 	if (index === -1) {
-		return mockResponse(null as unknown as Task);
+		return mockError('Task not found', 404);
 	}
 
 	mockTasks[index] = {
@@ -102,15 +84,10 @@ export async function updateTask(id: string, input: UpdateTaskInput): Promise<Ap
 	return mockResponse(mockTasks[index]);
 }
 
-interface MoveTaskInput {
-	status: 'backlog' | 'todo' | 'inprogress' | 'done';
-	position: number;
-}
-
-export async function moveTask(id: string, input: MoveTaskInput): Promise<ApiResponse<Task>> {
+async function moveTask(id: string, input: MoveTaskInput): Promise<ApiResponse<Task>> {
 	const index = mockTasks.findIndex((t) => t.id === id);
 	if (index === -1) {
-		return mockResponse(null as unknown as Task);
+		return mockError('Task not found', 404);
 	}
 
 	mockTasks[index] = {
@@ -123,10 +100,18 @@ export async function moveTask(id: string, input: MoveTaskInput): Promise<ApiRes
 	return mockResponse(mockTasks[index]);
 }
 
-export async function deleteTask(id: string): Promise<ApiResponse<void>> {
+async function deleteTask(id: string): Promise<ApiResponse<void>> {
 	const index = mockTasks.findIndex((t) => t.id === id);
 	if (index !== -1) {
 		mockTasks.splice(index, 1);
 	}
 	return mockResponse(undefined);
 }
+
+export const mockTasksApi: ITasksApi = {
+	listTasks,
+	createTask,
+	updateTask,
+	moveTask,
+	deleteTask
+};

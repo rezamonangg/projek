@@ -1,4 +1,4 @@
-import type { ApiResponse, PaginatedResponse } from '../types';
+import type { ApiResponse, PaginatedResponse, IMembersApi, InviteMemberInput, UpdateProfileInput } from '../types';
 import type { User } from '$lib/types/api';
 import { mockResponse, mockError, generateId } from './utils';
 import { generateMockUser } from './generators';
@@ -38,7 +38,7 @@ const mockMembers: User[] = [
 	})
 ];
 
-export async function listMembers(): Promise<ApiResponse<PaginatedResponse<User>>> {
+async function listMembers(): Promise<ApiResponse<PaginatedResponse<User>>> {
 	return mockResponse({
 		items: mockMembers,
 		total: mockMembers.length,
@@ -48,12 +48,7 @@ export async function listMembers(): Promise<ApiResponse<PaginatedResponse<User>
 	});
 }
 
-interface InviteMemberInput {
-	email: string;
-	role: 'admin' | 'member';
-}
-
-export async function inviteMember(
+async function inviteMember(
 	input: InviteMemberInput
 ): Promise<ApiResponse<{ invitationId: string }>> {
 	const existingMember = mockMembers.find((m) => m.email === input.email);
@@ -65,12 +60,7 @@ export async function inviteMember(
 	return mockResponse({ invitationId });
 }
 
-interface UpdateProfileInput {
-	firstName?: string;
-	lastName?: string;
-}
-
-export async function updateProfile(
+async function updateProfile(
 	userId: string,
 	input: UpdateProfileInput
 ): Promise<ApiResponse<User>> {
@@ -86,3 +76,9 @@ export async function updateProfile(
 
 	return mockResponse(mockMembers[memberIndex]);
 }
+
+export const mockMembersApi: IMembersApi = {
+	listMembers,
+	inviteMember,
+	updateProfile
+};

@@ -1,6 +1,6 @@
-import type { ApiResponse } from '../types';
+import type { ApiResponse, IWikiApi, CreateWikiPageInput, UpdateWikiPageInput } from '../types';
 import type { WikiPage } from '$lib/types/api';
-import { mockResponse, generateId } from './utils';
+import { mockResponse, mockError, generateId } from './utils';
 import { generateMockWikiPage } from './generators';
 
 const mockWikiPages: WikiPage[] = [
@@ -28,28 +28,20 @@ const mockWikiPages: WikiPage[] = [
 	})
 ];
 
-export async function listWikiPages(projectId: string): Promise<ApiResponse<WikiPage[]>> {
+async function listWikiPages(projectId: string): Promise<ApiResponse<WikiPage[]>> {
 	const pages = mockWikiPages.filter((p) => p.projectId === projectId);
 	return mockResponse(pages);
 }
 
-export async function getWikiPage(id: string): Promise<ApiResponse<WikiPage>> {
+async function getWikiPage(id: string): Promise<ApiResponse<WikiPage>> {
 	const page = mockWikiPages.find((p) => p.id === id);
 	if (!page) {
-		return mockResponse(null as unknown as WikiPage);
+		return mockError('Wiki page not found', 404);
 	}
 	return mockResponse(page);
 }
 
-interface CreateWikiPageInput {
-	title: string;
-	slug: string;
-	content: Record<string, unknown>;
-	projectId: string;
-	parentId?: string;
-}
-
-export async function createWikiPage(input: CreateWikiPageInput): Promise<ApiResponse<WikiPage>> {
+async function createWikiPage(input: CreateWikiPageInput): Promise<ApiResponse<WikiPage>> {
 	const newPage = generateMockWikiPage({
 		id: generateId(),
 		title: input.title,
@@ -62,20 +54,13 @@ export async function createWikiPage(input: CreateWikiPageInput): Promise<ApiRes
 	return mockResponse(newPage);
 }
 
-interface UpdateWikiPageInput {
-	title?: string;
-	slug?: string;
-	content?: Record<string, unknown>;
-	parentId?: string;
-}
-
-export async function updateWikiPage(
+async function updateWikiPage(
 	id: string,
 	input: UpdateWikiPageInput
 ): Promise<ApiResponse<WikiPage>> {
 	const index = mockWikiPages.findIndex((p) => p.id === id);
 	if (index === -1) {
-		return mockResponse(null as unknown as WikiPage);
+		return mockError('Wiki page not found', 404);
 	}
 
 	mockWikiPages[index] = {
@@ -86,3 +71,19 @@ export async function updateWikiPage(
 
 	return mockResponse(mockWikiPages[index]);
 }
+
+async function deleteWikiPage(id: string): Promise<ApiResponse<void>> {
+	const index = mockWikiPages.findIndex((p) => p.id === id);
+	if (index !== -1) {
+		mockWikiPages.splice(index, 1);
+	}
+	return mockResponse(undefined);
+}
+
+export const mockWikiApi: IWikiApi = {
+	listWikiPages,
+	getWikiPage,
+	createWikiPage,
+	updateWikiPage,
+	deleteWikiPage
+};

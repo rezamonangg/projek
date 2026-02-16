@@ -1,4 +1,4 @@
-import type { ApiResponse } from '../types';
+import type { ApiResponse, IAdminApi, UpdateCommunitySettingsInput } from '../types';
 import type { CommunitySettings, DashboardStats } from '$lib/types/api';
 import { mockResponse } from './utils';
 import { generateMockCommunitySettings, generateMockDashboardStats } from './generators';
@@ -19,18 +19,11 @@ let mockSettings = generateMockCommunitySettings({
 	metricsEnabled: true
 });
 
-export async function getCommunitySettings(): Promise<ApiResponse<CommunitySettings>> {
+async function getCommunitySettings(): Promise<ApiResponse<CommunitySettings>> {
 	return mockResponse(mockSettings);
 }
 
-interface UpdateCommunitySettingsInput {
-	name?: string;
-	emailConfig?: CommunitySettings['emailConfig'];
-	storageConfig?: CommunitySettings['storageConfig'];
-	metricsEnabled?: boolean;
-}
-
-export async function updateCommunitySettings(
+async function updateCommunitySettings(
 	input: UpdateCommunitySettingsInput
 ): Promise<ApiResponse<CommunitySettings>> {
 	mockSettings = {
@@ -40,6 +33,12 @@ export async function updateCommunitySettings(
 	return mockResponse(mockSettings);
 }
 
-export async function getDashboardStats(): Promise<ApiResponse<DashboardStats>> {
+async function getDashboardStats(): Promise<ApiResponse<DashboardStats>> {
 	return mockResponse(generateMockDashboardStats());
 }
+
+export const mockAdminApi: IAdminApi = {
+	getCommunitySettings,
+	updateCommunitySettings,
+	getDashboardStats
+};

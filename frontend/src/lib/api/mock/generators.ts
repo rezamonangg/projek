@@ -10,7 +10,7 @@ import type {
 	Attachment,
 	DashboardStats,
 	CommunitySettings
-} from '../types/api';
+} from '$lib/types/api';
 import { generateId } from './utils';
 
 const now = () => new Date().toISOString();

@@ -1,6 +1,6 @@
-import type { ApiResponse, PaginatedResponse } from '../types';
+import type { ApiResponse, PaginatedResponse, IProjectsApi, CreateProjectInput, UpdateProjectInput } from '../types';
 import type { Project } from '$lib/types/api';
-import { mockResponse, generateId } from './utils';
+import { mockResponse, mockError, generateId } from './utils';
 import { generateMockProject } from './generators';
 
 const mockProjects: Project[] = [
@@ -34,7 +34,7 @@ const mockProjects: Project[] = [
 	})
 ];
 
-export async function listProjects(): Promise<ApiResponse<PaginatedResponse<Project>>> {
+async function listProjects(): Promise<ApiResponse<PaginatedResponse<Project>>> {
 	return mockResponse({
 		items: mockProjects,
 		total: mockProjects.length,
@@ -44,20 +44,15 @@ export async function listProjects(): Promise<ApiResponse<PaginatedResponse<Proj
 	});
 }
 
-export async function getProject(id: string): Promise<ApiResponse<Project>> {
+async function getProject(id: string): Promise<ApiResponse<Project>> {
 	const project = mockProjects.find((p) => p.id === id);
 	if (!project) {
-		return mockResponse(null as unknown as Project);
+		return mockError('Project not found', 404);
 	}
 	return mockResponse(project);
 }
 
-interface CreateProjectInput {
-	name: string;
-	description: string;
-}
-
-export async function createProject(input: CreateProjectInput): Promise<ApiResponse<Project>> {
+async function createProject(input: CreateProjectInput): Promise<ApiResponse<Project>> {
 	const newProject = generateMockProject({
 		id: generateId(),
 		name: input.name,
@@ -69,19 +64,13 @@ export async function createProject(input: CreateProjectInput): Promise<ApiRespo
 	return mockResponse(newProject);
 }
 
-interface UpdateProjectInput {
-	name?: string;
-	description?: string;
-	status?: 'active' | 'archived';
-}
-
-export async function updateProject(
+async function updateProject(
 	id: string,
 	input: UpdateProjectInput
 ): Promise<ApiResponse<Project>> {
 	const index = mockProjects.findIndex((p) => p.id === id);
 	if (index === -1) {
-		return mockResponse(null as unknown as Project);
+		return mockError('Project not found', 404);
 	}
 
 	mockProjects[index] = {
@@ -93,10 +82,18 @@ export async function updateProject(
 	return mockResponse(mockProjects[index]);
 }
 
-export async function deleteProject(id: string): Promise<ApiResponse<void>> {
+async function deleteProject(id: string): Promise<ApiResponse<void>> {
 	const index = mockProjects.findIndex((p) => p.id === id);
 	if (index !== -1) {
 		mockProjects.splice(index, 1);
 	}
 	return mockResponse(undefined);
 }
+
+export const mockProjectsApi: IProjectsApi = {
+	listProjects,
+	getProject,
+	createProject,
+	updateProject,
+	deleteProject
+};

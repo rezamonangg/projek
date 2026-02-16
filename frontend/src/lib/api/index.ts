@@ -1,12 +1,73 @@
-export * as authApi from './mock/auth';
-export * as membersApi from './mock/members';
-export * as projectsApi from './mock/projects';
-export * as epicsApi from './mock/epics';
-export * as boardsApi from './mock/boards';
-export * as tasksApi from './mock/tasks';
-export * as labelsApi from './mock/labels';
-export * as wikiApi from './mock/wiki';
-export * as filesApi from './mock/files';
-export * as adminApi from './mock/admin';
+import type {
+	IAuthApi,
+	IMembersApi,
+	IProjectsApi,
+	IEpicsApi,
+	IBoardsApi,
+	ITasksApi,
+	ILabelsApi,
+	IWikiApi,
+	IFilesApi,
+	IAdminApi
+} from './types';
+
+import { mockAuthApi } from './mock/auth';
+import { mockMembersApi } from './mock/members';
+import { mockProjectsApi } from './mock/projects';
+import { mockEpicsApi } from './mock/epics';
+import { mockBoardsApi } from './mock/boards';
+import { mockTasksApi } from './mock/tasks';
+import { mockLabelsApi } from './mock/labels';
+import { mockWikiApi } from './mock/wiki';
+import { mockFilesApi } from './mock/files';
+import { mockAdminApi } from './mock/admin';
+
+const USE_MOCK = import.meta.env.PUBLIC_USE_MOCK_API !== 'false';
+
+let authApiImpl: IAuthApi;
+let membersApiImpl: IMembersApi;
+let projectsApiImpl: IProjectsApi;
+let epicsApiImpl: IEpicsApi;
+let boardsApiImpl: IBoardsApi;
+let tasksApiImpl: ITasksApi;
+let labelsApiImpl: ILabelsApi;
+let wikiApiImpl: IWikiApi;
+let filesApiImpl: IFilesApi;
+let adminApiImpl: IAdminApi;
+
+if (USE_MOCK) {
+	authApiImpl = mockAuthApi;
+	membersApiImpl = mockMembersApi;
+	projectsApiImpl = mockProjectsApi;
+	epicsApiImpl = mockEpicsApi;
+	boardsApiImpl = mockBoardsApi;
+	tasksApiImpl = mockTasksApi;
+	labelsApiImpl = mockLabelsApi;
+	wikiApiImpl = mockWikiApi;
+	filesApiImpl = mockFilesApi;
+	adminApiImpl = mockAdminApi;
+} else {
+	authApiImpl = mockAuthApi;
+	membersApiImpl = mockMembersApi;
+	projectsApiImpl = mockProjectsApi;
+	epicsApiImpl = mockEpicsApi;
+	boardsApiImpl = mockBoardsApi;
+	tasksApiImpl = mockTasksApi;
+	labelsApiImpl = mockLabelsApi;
+	wikiApiImpl = mockWikiApi;
+	filesApiImpl = mockFilesApi;
+	adminApiImpl = mockAdminApi;
+}
+
+export const authApi = authApiImpl;
+export const membersApi = membersApiImpl;
+export const projectsApi = projectsApiImpl;
+export const epicsApi = epicsApiImpl;
+export const boardsApi = boardsApiImpl;
+export const tasksApi = tasksApiImpl;
+export const labelsApi = labelsApiImpl;
+export const wikiApi = wikiApiImpl;
+export const filesApi = filesApiImpl;
+export const adminApi = adminApiImpl;
 
 export * from './types';
