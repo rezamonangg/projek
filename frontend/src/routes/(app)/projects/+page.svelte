@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Breadcrumb, Button, Input, Modal } from '$lib/components/common';
+	import { Breadcrumb, Button, Input, Modal, SkeletonCard } from '$lib/components/common';
 	import { projectsApi } from '$lib/api';
 	import type { Project } from '$lib/types/api';
 
@@ -68,7 +68,11 @@
 	</div>
 
 	{#if loading}
-		<div class="text-center py-12 text-gray-500">Loading...</div>
+		<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+			{#each Array(6) as _}
+				<SkeletonCard />
+			{/each}
+		</div>
 	{:else if projects.length === 0}
 		<div class="text-center py-12 bg-white rounded-lg border border-gray-200">
 			<p class="text-gray-500 mb-4">No projects yet.</p>

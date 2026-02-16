@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Breadcrumb, Button, Input, Modal } from '$lib/components/common';
+	import { Breadcrumb, Button, Input, Modal, SkeletonTable } from '$lib/components/common';
 	import { membersApi } from '$lib/api';
 	import type { User } from '$lib/types/api';
 
@@ -81,7 +81,7 @@
 		</div>
 
 		{#if loading}
-			<div class="p-12 text-center text-gray-500">Loading...</div>
+			<div class="p-4"><SkeletonTable rows={5} columns={3} /></div>
 		{:else if filteredMembers.length === 0}
 			<div class="p-12 text-center text-gray-500">
 				{searchQuery ? 'No members found matching your search.' : 'No members yet.'}
