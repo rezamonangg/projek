@@ -2,7 +2,7 @@ import { writable } from 'svelte/store';
 import { goto } from '$app/navigation';
 import { invalidateAll } from '$app/navigation';
 import { authApi } from '$lib/api';
-import { setToken, removeToken, setStoredUser, removeStoredUser } from '$lib/api/mock/storage';
+import { setToken, removeToken, setStoredUser, removeStoredUser } from '$lib/utils/storage';
 import type { User } from '$lib/types/api';
 
 interface AuthState {

@@ -1,6 +1,6 @@
 import type { LayoutServerLoad } from './$types';
 import { authStore } from '$lib/stores/auth';
-import { getStoredUser } from '$lib/api/mock/storage';
+import { getStoredUser } from '$lib/utils/storage';
 
 export const load: LayoutServerLoad = async () => {
 	const storedUser = getStoredUser();
