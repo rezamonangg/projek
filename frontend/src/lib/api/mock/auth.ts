@@ -1,7 +1,7 @@
 import type { ApiResponse } from '../types';
-import type { User } from '$lib/types/api';
+import type { User, Community } from '$lib/types/api';
 import { mockResponse, mockError, generateId } from './utils';
-import { generateMockUser } from './generators';
+import { generateMockUser, generateMockCommunity } from './generators';
 
 const mockUsers: User[] = [
 	generateMockUser({
@@ -39,4 +39,40 @@ export async function logout(): Promise<ApiResponse<void>> {
 
 export async function getCurrentUser(): Promise<ApiResponse<User>> {
 	return mockResponse(mockUsers[0]);
+}
+
+interface RegisterInput {
+	communityName: string;
+	slug: string;
+	adminEmail: string;
+	adminPassword: string;
+}
+
+export async function register(
+	input: RegisterInput
+): Promise<ApiResponse<{ user: User; community: Community; token: string }>> {
+	const existingUser = mockUsers.find((u) => u.email === input.adminEmail);
+	if (existingUser) {
+		return mockError('An account with this email already exists', 409);
+	}
+
+	const community = generateMockCommunity({
+		id: generateId(),
+		name: input.communityName,
+		slug: input.slug
+	});
+
+	const user = generateMockUser({
+		id: generateId(),
+		email: input.adminEmail,
+		firstName: 'Admin',
+		lastName: 'User',
+		role: 'admin',
+		communityId: community.id
+	});
+
+	mockUsers.push(user);
+
+	const token = generateId();
+	return mockResponse({ user, community, token });
 }

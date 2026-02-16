@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { Button } from '$lib/components/common';
 	import { Input } from '$lib/components/common';
+	import { authStore } from '$lib/stores/auth';
 
 	let communityName = $state('');
 	let slug = $state('');
@@ -63,8 +64,17 @@
 		}
 
 		loading = true;
-		// Will be integrated with mock API in next commit
+		const success = await authStore.register({
+			communityName,
+			slug,
+			adminEmail,
+			adminPassword
+		});
 		loading = false;
+
+		if (!success) {
+			submitError = 'Registration failed. Please try again.';
+		}
 	}
 
 	$effect(() => {

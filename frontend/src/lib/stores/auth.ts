@@ -46,6 +46,31 @@ function createAuthStore() {
 			set({ user: null, loading: false, error: null });
 			goto('/login');
 		},
+		async register(input: {
+			communityName: string;
+			slug: string;
+			adminEmail: string;
+			adminPassword: string;
+		}) {
+			update((s) => ({ ...s, loading: true, error: null }));
+
+			const response = await authApi.register(input);
+
+			if (response.error) {
+				update((s) => ({ ...s, loading: false, error: response.error }));
+				return false;
+			}
+
+			if (response.data) {
+				setToken(response.data.token);
+				setStoredUser(JSON.stringify(response.data.user));
+				set({ user: response.data.user, loading: false, error: null });
+				goto('/dashboard');
+				return true;
+			}
+
+			return false;
+		},
 		async loadUser() {
 			update((s) => ({ ...s, loading: true }));
 
