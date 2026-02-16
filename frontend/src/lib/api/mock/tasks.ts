@@ -1,6 +1,6 @@
 import type { ApiResponse } from '../types';
 import type { Task } from '$lib/types/api';
-import { mockResponse } from './utils';
+import { mockResponse, generateId } from './utils';
 import { generateMockTask } from './generators';
 
 const mockTasks: Task[] = [
@@ -51,4 +51,29 @@ const mockTasks: Task[] = [
 export async function listTasks(boardId: string): Promise<ApiResponse<Task[]>> {
 	const tasks = mockTasks.filter((t) => t.boardId === boardId);
 	return mockResponse(tasks);
+}
+
+interface CreateTaskInput {
+	title: string;
+	description: string;
+	boardId: string;
+	epicId?: string;
+	assigneeId?: string;
+	labels?: string[];
+}
+
+export async function createTask(input: CreateTaskInput): Promise<ApiResponse<Task>> {
+	const newTask = generateMockTask({
+		id: generateId(),
+		title: input.title,
+		description: input.description,
+		boardId: input.boardId,
+		epicId: input.epicId,
+		assigneeId: input.assigneeId,
+		labels: input.labels || [],
+		status: 'backlog',
+		position: mockTasks.filter((t) => t.boardId === input.boardId).length
+	});
+	mockTasks.push(newTask);
+	return mockResponse(newTask);
 }
