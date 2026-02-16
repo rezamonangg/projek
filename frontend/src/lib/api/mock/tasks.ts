@@ -122,3 +122,11 @@ export async function moveTask(id: string, input: MoveTaskInput): Promise<ApiRes
 
 	return mockResponse(mockTasks[index]);
 }
+
+export async function deleteTask(id: string): Promise<ApiResponse<void>> {
+	const index = mockTasks.findIndex((t) => t.id === id);
+	if (index !== -1) {
+		mockTasks.splice(index, 1);
+	}
+	return mockResponse(undefined);
+}
