@@ -42,8 +42,11 @@ dist/
 logs/
 
 # Database
-*.sql
 *.db
+
+# Except migrations
+!migrations/
+migrations/*.sql
 
 # Temp
 tmp/
