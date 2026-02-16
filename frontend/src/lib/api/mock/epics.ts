@@ -50,3 +50,23 @@ export async function createEpic(input: CreateEpicInput): Promise<ApiResponse<Ep
 	mockEpics.push(newEpic);
 	return mockResponse(newEpic);
 }
+
+interface UpdateEpicInput {
+	name?: string;
+	description?: string;
+	color?: string;
+}
+
+export async function updateEpic(id: string, input: UpdateEpicInput): Promise<ApiResponse<Epic>> {
+	const index = mockEpics.findIndex((e) => e.id === id);
+	if (index === -1) {
+		return mockResponse(null as unknown as Epic);
+	}
+
+	mockEpics[index] = {
+		...mockEpics[index],
+		...input
+	};
+
+	return mockResponse(mockEpics[index]);
+}
