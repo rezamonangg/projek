@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/redis/go-redis/v9"
 	"github.com/rs/zerolog"
@@ -12,47 +13,52 @@ import (
 )
 
 type Config struct {
-	Server   ServerConfig
-	Database DatabaseConfig
-	Redis    RedisConfig
-	Auth     AuthConfig
-	Email    EmailConfig
+	Server   ServerConfig   `validate:"required"`
+	Database DatabaseConfig `validate:"required"`
+	Redis    RedisConfig    `validate:"required"`
+	Auth     AuthConfig     `validate:"required"`
+	Email    EmailConfig    `validate:"required"`
 }
 
 type ServerConfig struct {
-	Port         int
-	ReadTimeout  time.Duration
-	WriteTimeout time.Duration
+	Port         int           `validate:"required,min=1,max=65535"`
+	ReadTimeout  time.Duration `validate:"required"`
+	WriteTimeout time.Duration `validate:"required"`
 }
 
 type DatabaseConfig struct {
-	Host     string
-	Port     int
-	User     string
-	Password string
-	Database string
-	PoolSize int
+	Host     string `validate:"required,hostname"`
+	Port     int    `validate:"required,min=1,max=65535"`
+	User     string `validate:"required"`
+	Password string `validate:"required"`
+	Database string `validate:"required"`
+	PoolSize int    `validate:"min=1"`
 }
 
 type RedisConfig struct {
-	Host     string
-	Port     int
+	Host     string `validate:"required,hostname"`
+	Port     int    `validate:"required,min=1,max=65535"`
 	Password string
-	DB       int
+	DB       int `validate:"min=0,max=15"`
 }
 
 type AuthConfig struct {
-	SessionTTL     time.Duration
-	PasswordMinLen int
+	SessionTTL     time.Duration `validate:"required,min=1m"`
+	PasswordMinLen int           `validate:"required,min=4"`
 }
 
 type EmailConfig struct {
-	SMTPHost     string
-	SMTPPort     int
+	SMTPHost     string `validate:"required,hostname"`
+	SMTPPort     int    `validate:"required,min=1,max=65535"`
 	SMTPUser     string
 	SMTPPassword string
-	FromEmail    string
-	FromName     string
+	FromEmail    string `validate:"required,email"`
+	FromName     string `validate:"required"`
+}
+
+func Validate(cfg *Config) error {
+	validate := validator.New()
+	return validate.Struct(cfg)
 }
 
 func LoadConfig() *Config {
@@ -119,20 +125,30 @@ func (c *DatabaseConfig) DSN() string {
 }
 
 func NewDatabase(cfg *Config, logger zerolog.Logger) (*pgxpool.Pool, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	pool, err := pgxpool.New(ctx, cfg.Database.DSN())
-	if err != nil {
-		return nil, fmt.Errorf("failed to create database pool: %w", err)
+	var pool *pgxpool.Pool
+	var err error
+
+	for i := 0; i < 5; i++ {
+		pool, err = pgxpool.New(ctx, cfg.Database.DSN())
+		if err == nil {
+			if err := pool.Ping(ctx); err == nil {
+				logger.Info().Str("host", cfg.Database.Host).Int("port", cfg.Database.Port).Msg("database connected")
+				return pool, nil
+			}
+			pool.Close()
+		}
+		logger.Warn().Int("attempt", i+1).Err(err).Msg("database connection failed, retrying...")
+		time.Sleep(time.Duration(i+1) * time.Second)
 	}
 
-	if err := pool.Ping(ctx); err != nil {
-		return nil, fmt.Errorf("failed to ping database: %w", err)
-	}
+	return nil, fmt.Errorf("failed to connect to database after 5 attempts: %w", err)
+}
 
-	logger.Info().Str("host", cfg.Database.Host).Int("port", cfg.Database.Port).Msg("database connected")
-	return pool, nil
+func DatabaseHealthCheck(ctx context.Context, pool *pgxpool.Pool) error {
+	return pool.Ping(ctx)
 }
 
 func NewRedis(cfg *Config, logger zerolog.Logger) (*redis.Client, error) {
