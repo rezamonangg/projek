@@ -51,3 +51,17 @@ export async function downloadFile(id: string): Promise<ApiResponse<Blob>> {
 	const blob = new Blob(['Mock file content'], { type: attachment.mimeType });
 	return mockResponse(blob);
 }
+
+export async function listAttachments(options: {
+	taskId?: string;
+	wikiPageId?: string;
+}): Promise<ApiResponse<Attachment[]>> {
+	let attachments = mockAttachments;
+	if (options.taskId) {
+		attachments = attachments.filter((a) => a.taskId === options.taskId);
+	}
+	if (options.wikiPageId) {
+		attachments = attachments.filter((a) => a.wikiPageId === options.wikiPageId);
+	}
+	return mockResponse(attachments);
+}
