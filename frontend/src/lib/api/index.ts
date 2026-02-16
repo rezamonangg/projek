@@ -31,6 +31,7 @@ import { realTasksApi } from './real/tasks';
 import { realLabelsApi } from './real/labels';
 import { realWikiApi } from './real/wiki';
 import { realFilesApi } from './real/files';
+import { realAdminApi } from './real/admin';
 
 const USE_MOCK = import.meta.env.PUBLIC_USE_MOCK_API !== 'false';
 
@@ -66,7 +67,7 @@ if (USE_MOCK) {
 	labelsApiImpl = realLabelsApi;
 	wikiApiImpl = realWikiApi;
 	filesApiImpl = realFilesApi;
-	adminApiImpl = mockAdminApi;
+	adminApiImpl = realAdminApi;
 }
 
 export const authApi = authApiImpl;
