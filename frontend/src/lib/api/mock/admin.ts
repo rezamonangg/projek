@@ -39,3 +39,7 @@ export async function updateCommunitySettings(
 	};
 	return mockResponse(mockSettings);
 }
+
+export async function getDashboardStats(): Promise<ApiResponse<DashboardStats>> {
+	return mockResponse(generateMockDashboardStats());
+}
