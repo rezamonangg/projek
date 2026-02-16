@@ -20,6 +20,7 @@ func NewRouter(cfg *common.Config, logger zerolog.Logger, db *pgxpool.Pool, redi
 	r.Use(middleware.RealIP)
 	r.Use(middleware.Recoverer)
 	r.Use(middleware.Timeout(60 * time.Second))
+	r.Use(common.RequestLogger(logger))
 
 	corsOpts := cors.Options{
 		AllowedOrigins:   []string{"http://localhost:3000", "http://localhost:8080"},
@@ -33,6 +34,7 @@ func NewRouter(cfg *common.Config, logger zerolog.Logger, db *pgxpool.Pool, redi
 
 	r.Get("/health", healthHandler)
 	r.Get("/ready", readinessHandler(db, redis))
+	r.Get("/health/detailed", detailedHealthHandler(db, redis))
 
 	return r
 }
@@ -55,5 +57,45 @@ func readinessHandler(db *pgxpool.Pool, redis *redis.Client) http.HandlerFunc {
 		}
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("OK"))
+	}
+}
+
+func detailedHealthHandler(db *pgxpool.Pool, redis *redis.Client) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+		status := map[string]interface{}{
+			"status": "healthy",
+			"checks": map[string]interface{}{},
+		}
+
+		if err := db.Ping(ctx); err != nil {
+			status["status"] = "unhealthy"
+			status["checks"].(map[string]interface{})["database"] = map[string]string{
+				"status": "unhealthy",
+				"error":  err.Error(),
+			}
+		} else {
+			status["checks"].(map[string]interface{})["database"] = map[string]string{
+				"status": "healthy",
+			}
+		}
+
+		if err := redis.Ping(ctx).Err(); err != nil {
+			status["status"] = "unhealthy"
+			status["checks"].(map[string]interface{})["redis"] = map[string]string{
+				"status": "unhealthy",
+				"error":  err.Error(),
+			}
+		} else {
+			status["checks"].(map[string]interface{})["redis"] = map[string]string{
+				"status": "healthy",
+			}
+		}
+
+		if status["status"] == "unhealthy" {
+			w.WriteHeader(http.StatusServiceUnavailable)
+		}
+
+		common.WriteJSON(w, http.StatusOK, status)
 	}
 }
