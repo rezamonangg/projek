@@ -1,6 +1,6 @@
 import type { ApiResponse, PaginatedResponse } from '../types';
 import type { User } from '$lib/types/api';
-import { mockResponse } from './utils';
+import { mockResponse, mockError, generateId } from './utils';
 import { generateMockUser } from './generators';
 
 const mockMembers: User[] = [
@@ -46,4 +46,21 @@ export async function listMembers(): Promise<ApiResponse<PaginatedResponse<User>
 		pageSize: 10,
 		totalPages: 1
 	});
+}
+
+interface InviteMemberInput {
+	email: string;
+	role: 'admin' | 'member';
+}
+
+export async function inviteMember(
+	input: InviteMemberInput
+): Promise<ApiResponse<{ invitationId: string }>> {
+	const existingMember = mockMembers.find((m) => m.email === input.email);
+	if (existingMember) {
+		return mockError('A member with this email already exists', 409);
+	}
+
+	const invitationId = generateId();
+	return mockResponse({ invitationId });
 }
