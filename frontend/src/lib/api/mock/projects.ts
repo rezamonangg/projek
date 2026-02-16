@@ -68,3 +68,27 @@ export async function createProject(input: CreateProjectInput): Promise<ApiRespo
 	mockProjects.push(newProject);
 	return mockResponse(newProject);
 }
+
+interface UpdateProjectInput {
+	name?: string;
+	description?: string;
+	status?: 'active' | 'archived';
+}
+
+export async function updateProject(
+	id: string,
+	input: UpdateProjectInput
+): Promise<ApiResponse<Project>> {
+	const index = mockProjects.findIndex((p) => p.id === id);
+	if (index === -1) {
+		return mockResponse(null as unknown as Project);
+	}
+
+	mockProjects[index] = {
+		...mockProjects[index],
+		...input,
+		updatedAt: new Date().toISOString()
+	};
+
+	return mockResponse(mockProjects[index]);
+}
