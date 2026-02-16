@@ -1,6 +1,6 @@
 import type { ApiResponse } from '../types';
 import type { Epic } from '$lib/types/api';
-import { mockResponse } from './utils';
+import { mockResponse, generateId } from './utils';
 import { generateMockEpic } from './generators';
 
 const mockEpics: Epic[] = [
@@ -30,4 +30,23 @@ const mockEpics: Epic[] = [
 export async function listEpics(projectId: string): Promise<ApiResponse<Epic[]>> {
 	const epics = mockEpics.filter((e) => e.projectId === projectId);
 	return mockResponse(epics);
+}
+
+interface CreateEpicInput {
+	name: string;
+	description: string;
+	color: string;
+	projectId: string;
+}
+
+export async function createEpic(input: CreateEpicInput): Promise<ApiResponse<Epic>> {
+	const newEpic = generateMockEpic({
+		id: generateId(),
+		name: input.name,
+		description: input.description,
+		color: input.color,
+		projectId: input.projectId
+	});
+	mockEpics.push(newEpic);
+	return mockResponse(newEpic);
 }
