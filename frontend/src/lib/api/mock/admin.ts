@@ -22,3 +22,20 @@ let mockSettings = generateMockCommunitySettings({
 export async function getCommunitySettings(): Promise<ApiResponse<CommunitySettings>> {
 	return mockResponse(mockSettings);
 }
+
+interface UpdateCommunitySettingsInput {
+	name?: string;
+	emailConfig?: CommunitySettings['emailConfig'];
+	storageConfig?: CommunitySettings['storageConfig'];
+	metricsEnabled?: boolean;
+}
+
+export async function updateCommunitySettings(
+	input: UpdateCommunitySettingsInput
+): Promise<ApiResponse<CommunitySettings>> {
+	mockSettings = {
+		...mockSettings,
+		...input
+	};
+	return mockResponse(mockSettings);
+}
