@@ -1,6 +1,6 @@
 import type { ApiResponse } from '../types';
 import type { Board } from '$lib/types/api';
-import { mockResponse } from './utils';
+import { mockResponse, generateId } from './utils';
 import { generateMockBoard } from './generators';
 
 const mockBoards: Board[] = [
@@ -27,4 +27,21 @@ const mockBoards: Board[] = [
 export async function listBoards(projectId: string): Promise<ApiResponse<Board[]>> {
 	const boards = mockBoards.filter((b) => b.projectId === projectId);
 	return mockResponse(boards);
+}
+
+interface CreateBoardInput {
+	name: string;
+	description?: string;
+	projectId: string;
+}
+
+export async function createBoard(input: CreateBoardInput): Promise<ApiResponse<Board>> {
+	const newBoard = generateMockBoard({
+		id: generateId(),
+		name: input.name,
+		description: input.description,
+		projectId: input.projectId
+	});
+	mockBoards.push(newBoard);
+	return mockResponse(newBoard);
 }
