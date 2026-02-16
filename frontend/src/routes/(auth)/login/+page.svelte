@@ -5,9 +5,33 @@
 	let email = $state('');
 	let password = $state('');
 	let loading = $state(false);
+	let errors = $state<{ email?: string; password?: string }>({});
+
+	function validateForm(): boolean {
+		errors = {};
+
+		if (!email) {
+			errors.email = 'Email is required';
+		} else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+			errors.email = 'Please enter a valid email address';
+		}
+
+		if (!password) {
+			errors.password = 'Password is required';
+		} else if (password.length < 6) {
+			errors.password = 'Password must be at least 6 characters';
+		}
+
+		return Object.keys(errors).length === 0;
+	}
 
 	async function handleSubmit(e: Event) {
 		e.preventDefault();
+
+		if (!validateForm()) {
+			return;
+		}
+
 		loading = true;
 		// Will be integrated with mock API in next commit
 		loading = false;
@@ -38,6 +62,7 @@
 					name="email"
 					label="Email address"
 					bind:value={email}
+					error={errors.email}
 					required
 					placeholder="you@example.com"
 				/>
@@ -47,6 +72,7 @@
 					name="password"
 					label="Password"
 					bind:value={password}
+					error={errors.password}
 					required
 					placeholder="Enter your password"
 				/>
