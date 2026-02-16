@@ -101,3 +101,24 @@ export async function updateTask(id: string, input: UpdateTaskInput): Promise<Ap
 
 	return mockResponse(mockTasks[index]);
 }
+
+interface MoveTaskInput {
+	status: 'backlog' | 'todo' | 'inprogress' | 'done';
+	position: number;
+}
+
+export async function moveTask(id: string, input: MoveTaskInput): Promise<ApiResponse<Task>> {
+	const index = mockTasks.findIndex((t) => t.id === id);
+	if (index === -1) {
+		return mockResponse(null as unknown as Task);
+	}
+
+	mockTasks[index] = {
+		...mockTasks[index],
+		status: input.status,
+		position: input.position,
+		updatedAt: new Date().toISOString()
+	};
+
+	return mockResponse(mockTasks[index]);
+}
