@@ -45,3 +45,11 @@ export async function createBoard(input: CreateBoardInput): Promise<ApiResponse<
 	mockBoards.push(newBoard);
 	return mockResponse(newBoard);
 }
+
+export async function getBoard(id: string): Promise<ApiResponse<Board>> {
+	const board = mockBoards.find((b) => b.id === id);
+	if (!board) {
+		return mockResponse(null as unknown as Board);
+	}
+	return mockResponse(board);
+}
