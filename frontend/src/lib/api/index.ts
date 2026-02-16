@@ -29,6 +29,8 @@ import { realEpicsApi } from './real/epics';
 import { realBoardsApi } from './real/boards';
 import { realTasksApi } from './real/tasks';
 import { realLabelsApi } from './real/labels';
+import { realWikiApi } from './real/wiki';
+import { realFilesApi } from './real/files';
 
 const USE_MOCK = import.meta.env.PUBLIC_USE_MOCK_API !== 'false';
 
@@ -62,8 +64,8 @@ if (USE_MOCK) {
 	boardsApiImpl = realBoardsApi;
 	tasksApiImpl = realTasksApi;
 	labelsApiImpl = realLabelsApi;
-	wikiApiImpl = mockWikiApi;
-	filesApiImpl = mockFilesApi;
+	wikiApiImpl = realWikiApi;
+	filesApiImpl = realFilesApi;
 	adminApiImpl = mockAdminApi;
 }
 
