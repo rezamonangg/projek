@@ -92,3 +92,11 @@ export async function updateProject(
 
 	return mockResponse(mockProjects[index]);
 }
+
+export async function deleteProject(id: string): Promise<ApiResponse<void>> {
+	const index = mockProjects.findIndex((p) => p.id === id);
+	if (index !== -1) {
+		mockProjects.splice(index, 1);
+	}
+	return mockResponse(undefined);
+}
