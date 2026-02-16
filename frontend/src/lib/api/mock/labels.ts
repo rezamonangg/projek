@@ -1,6 +1,6 @@
 import type { ApiResponse } from '../types';
 import type { Label } from '$lib/types/api';
-import { mockResponse } from './utils';
+import { mockResponse, generateId } from './utils';
 import { generateMockLabel } from './generators';
 
 const mockLabels: Label[] = [
@@ -39,4 +39,21 @@ const mockLabels: Label[] = [
 export async function listLabels(communityId: string): Promise<ApiResponse<Label[]>> {
 	const labels = mockLabels.filter((l) => l.communityId === communityId);
 	return mockResponse(labels);
+}
+
+interface CreateLabelInput {
+	name: string;
+	color: string;
+	communityId: string;
+}
+
+export async function createLabel(input: CreateLabelInput): Promise<ApiResponse<Label>> {
+	const newLabel = generateMockLabel({
+		id: generateId(),
+		name: input.name,
+		color: input.color,
+		communityId: input.communityId
+	});
+	mockLabels.push(newLabel);
+	return mockResponse(newLabel);
 }
