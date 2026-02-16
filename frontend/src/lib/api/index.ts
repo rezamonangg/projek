@@ -22,6 +22,8 @@ import { mockWikiApi } from './mock/wiki';
 import { mockFilesApi } from './mock/files';
 import { mockAdminApi } from './mock/admin';
 
+import { realAuthApi } from './real/auth';
+
 const USE_MOCK = import.meta.env.PUBLIC_USE_MOCK_API !== 'false';
 
 let authApiImpl: IAuthApi;
@@ -47,7 +49,7 @@ if (USE_MOCK) {
 	filesApiImpl = mockFilesApi;
 	adminApiImpl = mockAdminApi;
 } else {
-	authApiImpl = mockAuthApi;
+	authApiImpl = realAuthApi;
 	membersApiImpl = mockMembersApi;
 	projectsApiImpl = mockProjectsApi;
 	epicsApiImpl = mockEpicsApi;
