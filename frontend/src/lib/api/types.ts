@@ -34,6 +34,41 @@ export interface ApiClient {
 	delete<T>(url: string): Promise<ApiResponse<T>>;
 }
 
+export class ApiError extends Error {
+	constructor(
+		public status: number,
+		public code: string,
+		message: string
+	) {
+		super(message);
+		this.name = 'ApiError';
+	}
+}
+
+export function isApiError(error: unknown): error is ApiError {
+	return error instanceof ApiError;
+}
+
+export function isUnauthorized(error: unknown): boolean {
+	return isApiError(error) && error.status === 401;
+}
+
+export function isNotFound(error: unknown): boolean {
+	return isApiError(error) && error.status === 404;
+}
+
+export function isConflict(error: unknown): boolean {
+	return isApiError(error) && error.status === 409;
+}
+
+export function createResponse<T>(data: T): ApiResponse<T> {
+	return { data, error: null, status: 200 };
+}
+
+export function createErrorResponse<T>(error: string, status: number): ApiResponse<T> {
+	return { data: null, error, status };
+}
+
 export interface RegisterInput {
 	communityName: string;
 	slug: string;
