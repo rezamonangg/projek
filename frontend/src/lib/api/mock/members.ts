@@ -64,3 +64,25 @@ export async function inviteMember(
 	const invitationId = generateId();
 	return mockResponse({ invitationId });
 }
+
+interface UpdateProfileInput {
+	firstName?: string;
+	lastName?: string;
+}
+
+export async function updateProfile(
+	userId: string,
+	input: UpdateProfileInput
+): Promise<ApiResponse<User>> {
+	const memberIndex = mockMembers.findIndex((m) => m.id === userId);
+	if (memberIndex === -1) {
+		return mockError('User not found', 404);
+	}
+
+	mockMembers[memberIndex] = {
+		...mockMembers[memberIndex],
+		...input
+	};
+
+	return mockResponse(mockMembers[memberIndex]);
+}
