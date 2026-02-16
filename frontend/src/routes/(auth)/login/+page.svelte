@@ -99,7 +99,7 @@
 		</form>
 
 		<div class="text-center text-sm text-gray-500">
-			<p>Demo credentials: admin@example.com / password123</p>
+			<p>Demo credentials: admin@example.com / admin123</p>
 		</div>
 	</div>
 </div>

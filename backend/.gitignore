@@ -47,3 +47,4 @@ logs/
 # Temp
 tmp/
 temp/
+backend/api

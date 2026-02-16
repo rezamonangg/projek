@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/monachy/projek/internal/common"
 	"github.com/monachy/projek/internal/member"
 	"github.com/redis/go-redis/v9"
 )
@@ -111,6 +112,10 @@ func (s *AuthService) Login(ctx context.Context, email, password string) (*Sessi
 
 	if !m.IsActive {
 		return nil, nil, errors.New("account is inactive")
+	}
+
+	if !common.CheckPassword(password, m.PasswordHash) {
+		return nil, nil, errors.New("invalid credentials")
 	}
 
 	session := &Session{

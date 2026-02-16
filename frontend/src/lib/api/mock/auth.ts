@@ -25,7 +25,7 @@ const mockUsers: User[] = [
 async function login(email: string, password: string): Promise<ApiResponse<{ user: User; token: string }>> {
 	const user = mockUsers.find((u) => u.email === email);
 
-	if (!user || password !== 'password123') {
+	if (!user || password !== 'admin123') {
 		return mockError('Invalid email or password', 401);
 	}
 

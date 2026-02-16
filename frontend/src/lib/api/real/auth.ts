@@ -1,12 +1,6 @@
 import type { ApiResponse, IAuthApi, RegisterInput } from '../types';
 import type { User } from '$lib/types/api';
 import { httpClient } from './client';
-import { toCamelCase } from './transform';
-
-interface LoginRequest {
-	email: string;
-	password: string;
-}
 
 interface LoginResponse {
 	session_id: string;
@@ -55,14 +49,17 @@ function createErrorResponse<T>(error: string, status: number): ApiResponse<T> {
 
 async function login(email: string, password: string): Promise<ApiResponse<{ user: User; token: string }>> {
 	try {
-		const response = await httpClient.post<LoginResponse>('/auth/login', {
+		const response = await httpClient.post<{ data: LoginResponse }>('/auth/login', {
 			email,
 			password
-		} as LoginRequest);
+		});
+		console.log('Raw API response:', response);
 
-		const user = toFrontendUser(response.member);
-		return createResponse({ user, token: response.session_id });
+		const user = toFrontendUser(response.data.member);
+		console.log('Converted user:', user);
+		return createResponse({ user, token: response.data.session_id });
 	} catch (err) {
+		console.error('Login error:', err);
 		const message = err instanceof Error ? err.message : 'Login failed';
 		return createErrorResponse(message, 401);
 	}
@@ -79,8 +76,8 @@ async function logout(): Promise<ApiResponse<void>> {
 
 async function getCurrentUser(): Promise<ApiResponse<User>> {
 	try {
-		const member = await httpClient.get<BackendMember>('/auth/me');
-		const user = toFrontendUser(member);
+		const response = await httpClient.get<{ data: BackendMember }>('/auth/me');
+		const user = toFrontendUser(response.data);
 		return createResponse(user);
 	} catch (err) {
 		const message = err instanceof Error ? err.message : 'Not authenticated';

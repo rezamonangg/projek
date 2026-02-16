@@ -23,11 +23,14 @@ func TestAuthService_Login(t *testing.T) {
 	svc := NewAuthService(mockMemberRepo, mockSessionStore)
 
 	ctx := context.Background()
+	passwordHash, err := common.HashPassword("password123")
+	require.NoError(t, err)
+
 	testMember := &member.Member{
 		ID:           uuid.New(),
 		CommunityID:  uuid.New(),
 		Email:        "john@example.com",
-		PasswordHash: "$2a$10$hash",
+		PasswordHash: passwordHash,
 		FirstName:    "John",
 		LastName:     "Doe",
 		IsActive:     true,
@@ -91,6 +94,38 @@ func TestAuthService_Login_InactiveMember(t *testing.T) {
 	assert.Contains(t, err.Error(), "inactive")
 }
 
+func TestAuthService_Login_InvalidPassword(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockMemberRepo := member.NewMockRepository(ctrl)
+	mockSessionStore := NewMockSessionStore(ctrl)
+	svc := NewAuthService(mockMemberRepo, mockSessionStore)
+
+	ctx := context.Background()
+	passwordHash, err := common.HashPassword("correctpassword")
+	require.NoError(t, err)
+
+	testMember := &member.Member{
+		ID:           uuid.New(),
+		CommunityID:  uuid.New(),
+		Email:        "john@example.com",
+		PasswordHash: passwordHash,
+		FirstName:    "John",
+		LastName:     "Doe",
+		IsActive:     true,
+	}
+
+	mockMemberRepo.EXPECT().GetByEmail(ctx, "john@example.com").Return(testMember, nil)
+
+	session, m, err := svc.Login(ctx, "john@example.com", "wrongpassword")
+
+	assert.Nil(t, session)
+	assert.Nil(t, m)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "invalid credentials")
+}
+
 func TestAuthService_Login_SessionStoreError(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -100,11 +135,14 @@ func TestAuthService_Login_SessionStoreError(t *testing.T) {
 	svc := NewAuthService(mockMemberRepo, mockSessionStore)
 
 	ctx := context.Background()
+	passwordHash, err := common.HashPassword("password123")
+	require.NoError(t, err)
+
 	testMember := &member.Member{
 		ID:           uuid.New(),
 		CommunityID:  uuid.New(),
 		Email:        "john@example.com",
-		PasswordHash: "$2a$10$hash",
+		PasswordHash: passwordHash,
 		FirstName:    "John",
 		IsActive:     true,
 	}

@@ -1,5 +1,6 @@
 import { writable } from 'svelte/store';
 import { goto } from '$app/navigation';
+import { invalidateAll } from '$app/navigation';
 import { authApi } from '$lib/api';
 import { setToken, removeToken, setStoredUser, removeStoredUser } from '$lib/api/mock/storage';
 import type { User } from '$lib/types/api';
@@ -33,6 +34,7 @@ function createAuthStore() {
 				setToken(response.data.token);
 				setStoredUser(JSON.stringify(response.data.user));
 				set({ user: response.data.user, loading: false, error: null });
+				await invalidateAll();
 				goto('/dashboard');
 				return true;
 			}
@@ -65,6 +67,7 @@ function createAuthStore() {
 				setToken(response.data.token);
 				setStoredUser(JSON.stringify(response.data.user));
 				set({ user: response.data.user, loading: false, error: null });
+				await invalidateAll();
 				goto('/dashboard');
 				return true;
 			}

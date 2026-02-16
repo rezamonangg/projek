@@ -8,7 +8,9 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/monachy/projek/internal/auth"
 	"github.com/monachy/projek/internal/common"
+	"github.com/monachy/projek/internal/member"
 	"github.com/redis/go-redis/v9"
 	"github.com/rs/zerolog"
 )
@@ -23,7 +25,7 @@ func NewRouter(cfg *common.Config, logger zerolog.Logger, db *pgxpool.Pool, redi
 	r.Use(common.RequestLogger(logger))
 
 	corsOpts := cors.Options{
-		AllowedOrigins:   []string{"http://localhost:3000", "http://localhost:8080"},
+		AllowedOrigins:   []string{"http://localhost:3000", "http://localhost:5173", "http://localhost:8080"},
 		AllowedMethods:   []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
 		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
 		ExposedHeaders:   []string{"Link"},
@@ -35,6 +37,14 @@ func NewRouter(cfg *common.Config, logger zerolog.Logger, db *pgxpool.Pool, redi
 	r.Get("/health", healthHandler)
 	r.Get("/ready", readinessHandler(db, redis))
 	r.Get("/health/detailed", detailedHealthHandler(db, redis))
+
+	memberRepo := member.NewRepository(db)
+	memberService := member.NewService(memberRepo)
+
+	sessionStore := auth.NewSessionStore(redis, 7*24*time.Hour)
+	authService := auth.NewAuthService(memberRepo, sessionStore)
+	authHandler := auth.NewHandler(authService, memberService)
+	r.Mount("/auth", authHandler.Routes())
 
 	return r
 }
