@@ -12,6 +12,10 @@ import (
 func main() {
 	cfg := common.LoadConfig()
 
+	if err := common.Validate(cfg); err != nil {
+		log.Fatalf("invalid configuration: %v", err)
+	}
+
 	logger := common.NewLogger(cfg)
 	logger.Info().Str("version", "1.0.0").Msg("starting projek backend")
 
