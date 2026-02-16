@@ -1,11 +1,13 @@
 <script lang="ts">
 	import { Button } from '$lib/components/common';
 	import { Input } from '$lib/components/common';
+	import { authStore } from '$lib/stores/auth';
 
 	let email = $state('');
 	let password = $state('');
 	let loading = $state(false);
 	let errors = $state<{ email?: string; password?: string }>({});
+	let submitError = $state('');
 
 	function validateForm(): boolean {
 		errors = {};
@@ -27,14 +29,19 @@
 
 	async function handleSubmit(e: Event) {
 		e.preventDefault();
+		submitError = '';
 
 		if (!validateForm()) {
 			return;
 		}
 
 		loading = true;
-		// Will be integrated with mock API in next commit
+		const success = await authStore.login(email, password);
 		loading = false;
+
+		if (!success) {
+			submitError = 'Invalid email or password';
+		}
 	}
 </script>
 
@@ -56,6 +63,12 @@
 		</div>
 
 		<form class="mt-8 space-y-6" onsubmit={handleSubmit}>
+			{#if submitError}
+				<div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+					{submitError}
+				</div>
+			{/if}
+
 			<div class="space-y-4">
 				<Input
 					type="email"
