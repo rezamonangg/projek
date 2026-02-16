@@ -44,10 +44,6 @@ logs/
 # Database
 *.db
 
-# Except migrations
-!migrations/
-migrations/*.sql
-
 # Temp
 tmp/
 temp/

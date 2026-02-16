@@ -31,16 +31,16 @@ backend-lint:
 
 backend-migrate-up:
 	@echo "Running database migrations up..."
-	@cd backend && dbmate -e DATABASE_URL up
+	@cd backend && dbmate --migrations-dir ./migrations -e DATABASE_URL up
 
 backend-migrate-down:
 	@echo "Rolling back database..."
-	@cd backend && dbmate -e DATABASE_URL down
+	@cd backend && dbmate --migrations-dir ./migrations -e DATABASE_URL down
 
 backend-migrate-new:
 	@if [ -z "$(NAME)" ]; then echo "Usage: make backend-migrate-new NAME=create_users_table"; exit 1; fi
 	@echo "Creating migration $(NAME)..."
-	@cd backend && dbmate -e DATABASE_URL new $(NAME)
+	@cd backend && dbmate --migrations-dir ./migrations -e DATABASE_URL new $(NAME)
 
 backend-clean:
 	@echo "Cleaning build artifacts..."
