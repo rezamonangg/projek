@@ -1,6 +1,6 @@
 import type { ApiResponse, PaginatedResponse } from '../types';
 import type { Project } from '$lib/types/api';
-import { mockResponse } from './utils';
+import { mockResponse, generateId } from './utils';
 import { generateMockProject } from './generators';
 
 const mockProjects: Project[] = [
@@ -50,4 +50,21 @@ export async function getProject(id: string): Promise<ApiResponse<Project>> {
 		return mockResponse(null as unknown as Project);
 	}
 	return mockResponse(project);
+}
+
+interface CreateProjectInput {
+	name: string;
+	description: string;
+}
+
+export async function createProject(input: CreateProjectInput): Promise<ApiResponse<Project>> {
+	const newProject = generateMockProject({
+		id: generateId(),
+		name: input.name,
+		description: input.description,
+		status: 'active',
+		communityId: 'community-1'
+	});
+	mockProjects.push(newProject);
+	return mockResponse(newProject);
 }
