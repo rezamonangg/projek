@@ -37,7 +37,7 @@
 		onfocus
 	}: Props = $props();
 
-	const inputId = id || name || crypto.randomUUID();
+	let inputId = $derived(id || name || crypto.randomUUID());
 </script>
 
 <div class="w-full">

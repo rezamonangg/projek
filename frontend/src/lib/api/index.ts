@@ -27,6 +27,8 @@ import { realMembersApi } from './real/members';
 import { realProjectsApi } from './real/projects';
 import { realEpicsApi } from './real/epics';
 import { realBoardsApi } from './real/boards';
+import { realTasksApi } from './real/tasks';
+import { realLabelsApi } from './real/labels';
 
 const USE_MOCK = import.meta.env.PUBLIC_USE_MOCK_API !== 'false';
 
@@ -58,8 +60,8 @@ if (USE_MOCK) {
 	projectsApiImpl = realProjectsApi;
 	epicsApiImpl = realEpicsApi;
 	boardsApiImpl = realBoardsApi;
-	tasksApiImpl = mockTasksApi;
-	labelsApiImpl = mockLabelsApi;
+	tasksApiImpl = realTasksApi;
+	labelsApiImpl = realLabelsApi;
 	wikiApiImpl = mockWikiApi;
 	filesApiImpl = mockFilesApi;
 	adminApiImpl = mockAdminApi;
