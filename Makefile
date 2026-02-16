@@ -56,6 +56,10 @@ backend-setup-dev:
 	@which dbmate > /dev/null || (echo "dbmate not found. Install: brew install dbmate" && exit 1)
 	@which golangci-lint > /dev/null || (echo "golangci-lint not found. Install: brew install golangci-lint" && exit 1)
 
+backend-seed:
+	@echo "Running development seed..."
+	@cd backend && ENV=development go run ./cmd/seed
+
 # Frontend
 frontend-dev:
 	cd frontend && npm run dev

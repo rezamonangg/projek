@@ -23,6 +23,7 @@ import { mockFilesApi } from './mock/files';
 import { mockAdminApi } from './mock/admin';
 
 import { realAuthApi } from './real/auth';
+import { realMembersApi } from './real/members';
 
 const USE_MOCK = import.meta.env.PUBLIC_USE_MOCK_API !== 'false';
 
@@ -50,7 +51,7 @@ if (USE_MOCK) {
 	adminApiImpl = mockAdminApi;
 } else {
 	authApiImpl = realAuthApi;
-	membersApiImpl = mockMembersApi;
+	membersApiImpl = realMembersApi;
 	projectsApiImpl = mockProjectsApi;
 	epicsApiImpl = mockEpicsApi;
 	boardsApiImpl = mockBoardsApi;
