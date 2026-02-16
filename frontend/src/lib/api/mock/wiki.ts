@@ -32,3 +32,11 @@ export async function listWikiPages(projectId: string): Promise<ApiResponse<Wiki
 	const pages = mockWikiPages.filter((p) => p.projectId === projectId);
 	return mockResponse(pages);
 }
+
+export async function getWikiPage(id: string): Promise<ApiResponse<WikiPage>> {
+	const page = mockWikiPages.find((p) => p.id === id);
+	if (!page) {
+		return mockResponse(null as unknown as WikiPage);
+	}
+	return mockResponse(page);
+}
