@@ -41,3 +41,13 @@ export async function uploadFile(
 	mockAttachments.push(newAttachment);
 	return mockResponse(newAttachment);
 }
+
+export async function downloadFile(id: string): Promise<ApiResponse<Blob>> {
+	const attachment = mockAttachments.find((a) => a.id === id);
+	if (!attachment) {
+		return mockResponse(null as unknown as Blob);
+	}
+
+	const blob = new Blob(['Mock file content'], { type: attachment.mimeType });
+	return mockResponse(blob);
+}
