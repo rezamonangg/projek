@@ -32,3 +32,7 @@ export async function login(email: string, password: string): Promise<ApiRespons
 	const token = generateId();
 	return mockResponse({ user, token });
 }
+
+export async function logout(): Promise<ApiResponse<void>> {
+	return mockResponse(undefined);
+}
