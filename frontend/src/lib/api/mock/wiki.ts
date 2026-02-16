@@ -1,6 +1,6 @@
 import type { ApiResponse } from '../types';
 import type { WikiPage } from '$lib/types/api';
-import { mockResponse } from './utils';
+import { mockResponse, generateId } from './utils';
 import { generateMockWikiPage } from './generators';
 
 const mockWikiPages: WikiPage[] = [
@@ -39,4 +39,25 @@ export async function getWikiPage(id: string): Promise<ApiResponse<WikiPage>> {
 		return mockResponse(null as unknown as WikiPage);
 	}
 	return mockResponse(page);
+}
+
+interface CreateWikiPageInput {
+	title: string;
+	slug: string;
+	content: Record<string, unknown>;
+	projectId: string;
+	parentId?: string;
+}
+
+export async function createWikiPage(input: CreateWikiPageInput): Promise<ApiResponse<WikiPage>> {
+	const newPage = generateMockWikiPage({
+		id: generateId(),
+		title: input.title,
+		slug: input.slug,
+		content: input.content,
+		projectId: input.projectId,
+		parentId: input.parentId
+	});
+	mockWikiPages.push(newPage);
+	return mockResponse(newPage);
 }
