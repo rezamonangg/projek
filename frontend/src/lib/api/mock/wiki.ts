@@ -61,3 +61,28 @@ export async function createWikiPage(input: CreateWikiPageInput): Promise<ApiRes
 	mockWikiPages.push(newPage);
 	return mockResponse(newPage);
 }
+
+interface UpdateWikiPageInput {
+	title?: string;
+	slug?: string;
+	content?: Record<string, unknown>;
+	parentId?: string;
+}
+
+export async function updateWikiPage(
+	id: string,
+	input: UpdateWikiPageInput
+): Promise<ApiResponse<WikiPage>> {
+	const index = mockWikiPages.findIndex((p) => p.id === id);
+	if (index === -1) {
+		return mockResponse(null as unknown as WikiPage);
+	}
+
+	mockWikiPages[index] = {
+		...mockWikiPages[index],
+		...input,
+		updatedAt: new Date().toISOString()
+	};
+
+	return mockResponse(mockWikiPages[index]);
+}
