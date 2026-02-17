@@ -68,13 +68,20 @@ async function getCommunitySettings(): Promise<ApiResponse<CommunitySettings>> {
 	}
 }
 
-async function updateCommunitySettings(_input: UpdateCommunitySettingsInput): Promise<ApiResponse<CommunitySettings>> {
+async function updateCommunitySettings(input: UpdateCommunitySettingsInput): Promise<ApiResponse<CommunitySettings>> {
 	try {
-		const settings = await httpClient.put<BackendCommunitySettings>('/admin/settings', {});
+		const body: Record<string, unknown> = {};
+		if (input.name) body.name = input.name;
+		if (input.emailConfig) body.email_config = input.emailConfig;
+		if (input.storageConfig) body.storage_config = input.storageConfig;
+		if (input.metricsEnabled !== undefined) body.metrics_enabled = input.metricsEnabled;
+
+		const settings = await httpClient.put<BackendCommunitySettings>('/admin/settings', body);
 		return createResponse(toFrontendSettings(settings));
 	} catch (err) {
 		const message = err instanceof Error ? err.message : 'Failed to update settings';
-		return createErrorResponse(message, 500);
+		const status = message.includes('forbidden') ? 403 : 500;
+		return createErrorResponse(message, status);
 	}
 }
 
