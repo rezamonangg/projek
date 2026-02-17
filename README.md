@@ -69,7 +69,12 @@ projek/
 
 2. **Start infrastructure:**
    ```bash
+
+   # for complete infra
    make docker-up
+
+   # for redis and postgres only
+   make docker-db
    ```
 
 3. **Run database migrations:**
@@ -132,6 +137,7 @@ projek/
 | Command | Description |
 |---------|-------------|
 | `make docker-up` | Start Postgres, Redis, Prometheus in Docker |
+| `make docker-db` | Start only Postgres and Redis (no Prometheus) |
 | `make docker-down` | Stop Docker services |
 
 ### Maintenance

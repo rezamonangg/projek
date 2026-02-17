@@ -121,6 +121,9 @@ seed:
 docker-up:
 	@docker-compose up -d
 
+docker-db:
+	@docker-compose up redis postgres -d
+
 ## Stop Docker services
 docker-down:
 	@docker-compose down
