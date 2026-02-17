@@ -63,9 +63,13 @@ func NewRouter(cfg *common.Config, logger zerolog.Logger, db *pgxpool.Pool, redi
 	taskService := task.NewService(taskRepo, taskLabelRepo)
 	taskHandler := task.NewHandler(taskService)
 
+	taskFullService := task.NewTaskService(taskRepo, taskLabelRepo)
+	labelHandler := task.NewLabelHandler(taskFullService)
+
 	r.Route("/projects/{projectId}", func(r chi.Router) {
 		r.Mount("/epics", epicHandler.ProjectRoutes())
 		r.Mount("/boards", boardHandler.ProjectRoutes())
+		r.Mount("/labels", labelHandler.ProjectRoutes())
 	})
 	r.Mount("/epics", epicHandler.Routes())
 	r.Mount("/boards", boardHandler.Routes())
@@ -74,6 +78,10 @@ func NewRouter(cfg *common.Config, logger zerolog.Logger, db *pgxpool.Pool, redi
 		r.Mount("/tasks", taskHandler.BoardRoutes())
 	})
 	r.Mount("/tasks", taskHandler.Routes())
+
+	r.Route("/tasks/{taskId}", func(r chi.Router) {
+		r.Mount("/labels", labelHandler.TaskRoutes())
+	})
 
 	return r
 }
