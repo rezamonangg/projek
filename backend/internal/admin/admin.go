@@ -9,11 +9,6 @@ import (
 	"github.com/monachy/projek/internal/common"
 )
 
-type SettingsRepository interface {
-	GetByCommunity(ctx context.Context, communityID uuid.UUID) (*CommunitySettings, error)
-	Update(ctx context.Context, settings *CommunitySettings) error
-}
-
 type CommunitySettings struct {
 	ID                       uuid.UUID `json:"id"`
 	CommunityID              uuid.UUID `json:"community_id"`
@@ -21,6 +16,23 @@ type CommunitySettings struct {
 	RequireEmailVerification bool      `json:"require_email_verification"`
 	CreatedAt                time.Time `json:"created_at"`
 	UpdatedAt                time.Time `json:"updated_at"`
+}
+
+type DashboardStats struct {
+	TotalMembers   int `json:"total_members"`
+	TotalProjects  int `json:"total_projects"`
+	TotalTasks     int `json:"total_tasks"`
+	ActiveTasks    int `json:"active_tasks"`
+	CompletedTasks int `json:"completed_tasks"`
+}
+
+type StatsRepository interface {
+	GetDashboardStats(ctx context.Context, communityID uuid.UUID) (*DashboardStats, error)
+}
+
+type SettingsRepository interface {
+	GetByCommunity(ctx context.Context, communityID uuid.UUID) (*CommunitySettings, error)
+	Update(ctx context.Context, settings *CommunitySettings) error
 }
 
 type PgxSettingsRepository struct {
@@ -47,12 +59,52 @@ func (r *PgxSettingsRepository) Update(ctx context.Context, settings *CommunityS
 	return err
 }
 
-type Service struct {
-	settingsRepo SettingsRepository
+type PgxStatsRepository struct {
+	db *pgxpool.Pool
 }
 
-func NewService(settingsRepo SettingsRepository) *Service {
-	return &Service{settingsRepo: settingsRepo}
+func NewStatsRepository(db *pgxpool.Pool) StatsRepository {
+	return &PgxStatsRepository{db: db}
+}
+
+func (r *PgxStatsRepository) GetDashboardStats(ctx context.Context, communityID uuid.UUID) (*DashboardStats, error) {
+	var stats DashboardStats
+
+	err := r.db.QueryRow(ctx,
+		"SELECT COUNT(*) FROM members WHERE community_id = $1", communityID).Scan(&stats.TotalMembers)
+	if err != nil {
+		return nil, err
+	}
+
+	err = r.db.QueryRow(ctx,
+		"SELECT COUNT(*) FROM projects WHERE community_id = $1", communityID).Scan(&stats.TotalProjects)
+	if err != nil {
+		return nil, err
+	}
+
+	err = r.db.QueryRow(ctx,
+		`SELECT COUNT(*), 
+			SUM(CASE WHEN status = 'done' THEN 1 ELSE 0 END)
+			FROM tasks t
+			JOIN boards b ON t.board_id = b.id
+			JOIN projects p ON b.project_id = p.id
+			WHERE p.community_id = $1`, communityID).Scan(&stats.TotalTasks, &stats.CompletedTasks)
+	if err != nil {
+		return nil, err
+	}
+
+	stats.ActiveTasks = stats.TotalTasks - stats.CompletedTasks
+
+	return &stats, nil
+}
+
+type Service struct {
+	settingsRepo SettingsRepository
+	statsRepo    StatsRepository
+}
+
+func NewService(settingsRepo SettingsRepository, statsRepo StatsRepository) *Service {
+	return &Service{settingsRepo: settingsRepo, statsRepo: statsRepo}
 }
 
 func (s *Service) GetSettings(ctx context.Context, communityID uuid.UUID) (*CommunitySettings, error) {
@@ -86,41 +138,6 @@ func (s *Service) UpdateSettings(ctx context.Context, communityID uuid.UUID, all
 	return settings, nil
 }
 
-type DashboardStats struct {
-	TotalMembers   int `json:"total_members"`
-	TotalProjects  int `json:"total_projects"`
-	TotalTasks     int `json:"total_tasks"`
-	ActiveTasks    int `json:"active_tasks"`
-	CompletedTasks int `json:"completed_tasks"`
-}
-
 func (s *Service) GetDashboardStats(ctx context.Context, communityID uuid.UUID) (*DashboardStats, error) {
-	var stats DashboardStats
-
-	err := s.settingsRepo.(*PgxSettingsRepository).db.QueryRow(ctx,
-		"SELECT COUNT(*) FROM members WHERE community_id = $1", communityID).Scan(&stats.TotalMembers)
-	if err != nil {
-		return nil, err
-	}
-
-	err = s.settingsRepo.(*PgxSettingsRepository).db.QueryRow(ctx,
-		"SELECT COUNT(*) FROM projects WHERE community_id = $1", communityID).Scan(&stats.TotalProjects)
-	if err != nil {
-		return nil, err
-	}
-
-	err = s.settingsRepo.(*PgxSettingsRepository).db.QueryRow(ctx,
-		`SELECT COUNT(*), 
-			SUM(CASE WHEN status = 'done' THEN 1 ELSE 0 END)
-			FROM tasks t
-			JOIN boards b ON t.board_id = b.id
-			JOIN projects p ON b.project_id = p.id
-			WHERE p.community_id = $1`, communityID).Scan(&stats.TotalTasks, &stats.CompletedTasks)
-	if err != nil {
-		return nil, err
-	}
-
-	stats.ActiveTasks = stats.TotalTasks - stats.CompletedTasks
-
-	return &stats, nil
+	return s.statsRepo.GetDashboardStats(ctx, communityID)
 }

@@ -8,6 +8,7 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/monachy/projek/internal/admin"
 	"github.com/monachy/projek/internal/auth"
 	"github.com/monachy/projek/internal/common"
 	"github.com/monachy/projek/internal/file"
@@ -79,6 +80,11 @@ func NewRouter(cfg *common.Config, logger zerolog.Logger, db *pgxpool.Pool, redi
 	fileService := file.NewService(fileRepo, fileStorage)
 	fileHandler := file.NewHandler(fileService)
 
+	adminSettingsRepo := admin.NewSettingsRepository(db)
+	adminStatsRepo := admin.NewStatsRepository(db)
+	adminService := admin.NewService(adminSettingsRepo, adminStatsRepo)
+	adminHandler := admin.NewHandler(adminService)
+
 	r.Route("/projects/{projectId}", func(r chi.Router) {
 		r.Mount("/epics", epicHandler.ProjectRoutes())
 		r.Mount("/boards", boardHandler.ProjectRoutes())
@@ -99,6 +105,8 @@ func NewRouter(cfg *common.Config, logger zerolog.Logger, db *pgxpool.Pool, redi
 	r.Route("/tasks/{taskId}", func(r chi.Router) {
 		r.Mount("/labels", labelHandler.TaskRoutes())
 	})
+
+	r.Mount("/admin", adminHandler.Routes())
 
 	return r
 }
