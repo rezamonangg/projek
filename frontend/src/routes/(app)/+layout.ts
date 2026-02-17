@@ -1,6 +1,7 @@
 import { browser } from '$app/environment';
 import { redirect } from '@sveltejs/kit';
-import { getStoredUser } from '$lib/utils/storage';
+import { authApi } from '$lib/api';
+import { getStoredUser, setStoredUser, removeStoredUser } from '$lib/utils/storage';
 import type { LayoutLoad } from './$types';
 
 export const load: LayoutLoad = async ({ url }) => {
@@ -20,6 +21,15 @@ export const load: LayoutLoad = async ({ url }) => {
 	}
 
 	if (!user) {
+		const response = await authApi.getCurrentUser();
+		if (response.data) {
+			user = response.data;
+			setStoredUser(JSON.stringify(user));
+		}
+	}
+
+	if (!user) {
+		removeStoredUser();
 		throw redirect(302, '/login');
 	}
 

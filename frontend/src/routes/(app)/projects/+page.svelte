@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { Breadcrumb, Button, Input, Modal, SkeletonCard } from '$lib/components/common';
 	import { projectsApi } from '$lib/api';
+	import { formatDate } from '$lib/utils';
 	import type { Project } from '$lib/types/api';
 
 	let projects = $state<Project[]>([]);
@@ -93,7 +94,7 @@
 					</div>
 					<p class="text-sm text-gray-500 line-clamp-2">{project.description}</p>
 					<div class="mt-4 pt-4 border-t border-gray-100 flex items-center justify-between text-xs text-gray-400">
-						<span>Created {new Date(project.createdAt).toLocaleDateString()}</span>
+						<span>Created {formatDate(project.createdAt)}</span>
 					</div>
 				</a>
 			{/each}
