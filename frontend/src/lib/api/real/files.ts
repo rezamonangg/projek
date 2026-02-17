@@ -45,8 +45,14 @@ function createErrorResponse<T>(error: string, status: number): ApiResponse<T> {
 	};
 }
 
+const MAX_FILE_SIZE = 10 * 1024 * 1024;
+
 async function uploadFile(file: File, options: UploadFileOptions): Promise<ApiResponse<Attachment>> {
 	try {
+		if (file.size > MAX_FILE_SIZE) {
+			return createErrorResponse('File size exceeds 10MB limit', 400);
+		}
+
 		const formData = new FormData();
 		formData.append('file', file);
 		formData.append('uploader_id', options.uploadedBy);
