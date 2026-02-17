@@ -1,79 +1,12 @@
-.PHONY: build backend frontend run-all test test-e2e lint migrate-up migrate-down migrate-new dev clean docker-up docker-down
+# Project Makefile - Unified commands for backend (Go) and frontend (SvelteKit)
 
-# Backend
-BINARY_NAME=projek
-BUILD_DIR=./backend/bin
+.PHONY: dev backend frontend build build-fe start test test-be test-fe test-e2e lint lint-be lint-fe migrate migrate-down migrate-new seed docker-up docker-down clean help
 
-# Root commands
-backend-dev:
-	cd backend && go run ./cmd/api
+# =============================================================================
+# Development - Start services in development mode with hot reload
+# =============================================================================
 
-backend-build:
-	@echo "Building $(BINARY_NAME)..."
-	@mkdir -p $(BUILD_DIR)
-	@cd backend && go build -o ../$(BUILD_DIR)/$(BINARY_NAME) ./cmd/api
-
-backend-run: backend-build
-	@echo "Starting $(BINARY_NAME)..."
-	@$(BUILD_DIR)/$(BINARY_NAME)
-
-backend-test:
-	@echo "Running backend unit tests..."
-	@cd backend && go test -v -race -coverprofile=coverage.out ./...
-
-backend-test-e2e:
-	@echo "Running backend E2E tests..."
-	@cd backend && go test -v -tags=e2e ./test/...
-
-backend-lint:
-	@echo "Running backend linter..."
-	@cd backend && golangci-lint run ./... || true
-
-backend-migrate-up:
-	@echo "Running database migrations up..."
-	@cd backend && dbmate --migrations-dir ./migrations -e DATABASE_URL up
-
-backend-migrate-down:
-	@echo "Rolling back database..."
-	@cd backend && dbmate --migrations-dir ./migrations -e DATABASE_URL down
-
-backend-migrate-new:
-	@if [ -z "$(NAME)" ]; then echo "Usage: make backend-migrate-new NAME=create_users_table"; exit 1; fi
-	@echo "Creating migration $(NAME)..."
-	@cd backend && dbmate --migrations-dir ./migrations -e DATABASE_URL new $(NAME)
-
-backend-clean:
-	@echo "Cleaning build artifacts..."
-	@rm -rf $(BUILD_DIR)
-	@cd backend && rm -f coverage.out *.test
-
-backend-deps:
-	@echo "Installing backend dependencies..."
-	@cd backend && go mod download && go mod tidy
-
-backend-setup-dev:
-	@echo "Setting up backend development environment..."
-	@which dbmate > /dev/null || (echo "dbmate not found. Install: brew install dbmate" && exit 1)
-	@which golangci-lint > /dev/null || (echo "golangci-lint not found. Install: brew install golangci-lint" && exit 1)
-
-backend-seed:
-	@echo "Running development seed..."
-	@cd backend && ENV=development go run ./cmd/seed
-
-# Frontend
-frontend-dev:
-	cd frontend && npm run dev
-
-frontend-build:
-	cd frontend && npm run build
-
-frontend-test:
-	cd frontend && npm test
-
-frontend-lint:
-	cd frontend && npm run lint
-
-# Combined
+## Run backend and frontend concurrently in development mode
 dev:
 	@echo "Starting backend and frontend in parallel..."
 	@trap 'kill %1 %2 2>/dev/null; exit' INT; \
@@ -81,25 +14,167 @@ dev:
 		cd frontend && npm run dev & \
 		wait
 
-run:
-	@echo "Building and running backend with frontend..."
-	@trap 'kill %1 %2 2>/dev/null; exit' INT; \
-		$(BUILD_DIR)/$(BINARY_NAME) & \
-		cd frontend && sleep 2 && npm run dev & \
-		wait
+## Run backend development server (hot reload via go run)
+backend:
+	@cd backend && go run ./cmd/api
 
+## Run frontend development server (Vite hot reload)
+frontend:
+	@cd frontend && npm run dev
+
+# =============================================================================
+# Production Build
+# =============================================================================
+
+## Build backend binary to backend/bin/projek
+build:
+	@echo "Building backend binary..."
+	@mkdir -p backend/bin
+	@cd backend && go build -o ./bin/projek ./cmd/api
+	@echo "Binary built: backend/bin/projek"
+
+## Build frontend for production (outputs to frontend/build/)
+build-fe:
+	@echo "Building frontend..."
+	@cd frontend && npm run build
+	@echo "Frontend built: frontend/build/"
+
+## Build and run production backend binary
+start: build
+	@echo "Starting production binary..."
+	@./backend/bin/projek
+
+# =============================================================================
+# Testing
+# =============================================================================
+
+## Run all unit tests (backend + frontend)
+test: test-be test-fe
+
+## Run backend unit tests with race detector and coverage
+test-be:
+	@echo "Running backend unit tests..."
+	@cd backend && go test -v -race -coverprofile=coverage.out ./...
+
+## Run frontend unit tests
+test-fe:
+	@echo "Running frontend tests..."
+	@cd frontend && npm test
+
+## Run backend E2E tests (requires database and services)
+test-e2e:
+	@echo "Running backend E2E tests..."
+	@cd backend && go test -v -tags=e2e ./test/...
+
+# =============================================================================
+# Code Quality
+# =============================================================================
+
+## Run all linters (backend + frontend)
+lint: lint-be lint-fe
+
+## Run golangci-lint on backend code
+lint-be:
+	@echo "Running backend linter..."
+	@cd backend && golangci-lint run ./...
+
+## Run ESLint on frontend code
+lint-fe:
+	@echo "Running frontend linter..."
+	@cd frontend && npm run lint
+
+# =============================================================================
+# Database Migrations (using dbmate)
+# =============================================================================
+
+## Run all pending database migrations up
+migrate:
+	@echo "Running database migrations up..."
+	@cd backend && dbmate --migrations-dir ./migrations -e DATABASE_URL up
+
+## Rollback the last database migration
+migrate-down:
+	@echo "Rolling back last migration..."
+	@cd backend && dbmate --migrations-dir ./migrations -e DATABASE_URL down
+
+## Create a new database migration file
+## Usage: make migrate-new NAME=create_users_table
+migrate-new:
+	@if [ -z "$(NAME)" ]; then \
+		echo "Error: NAME is required"; \
+		echo "Usage: make migrate-new NAME=create_users_table"; \
+		exit 1; \
+	fi
+	@echo "Creating migration: $(NAME)..."
+	@cd backend && dbmate --migrations-dir ./migrations -e DATABASE_URL new $(NAME)
+
+## Seed development database with test data
+seed:
+	@echo "Running development seed..."
+	@cd backend && ENV=development go run ./cmd/seed
+
+# =============================================================================
+# Infrastructure
+# =============================================================================
+
+## Start Docker services (Postgres, Redis, Prometheus)
 docker-up:
-	docker-compose up -d
+	@docker-compose up -d
 
+## Stop Docker services
 docker-down:
-	docker-compose down
+	@docker-compose down
 
-# Aliases for backward compatibility
-build: backend-build
-test: backend-test
-test-e2e: backend-test-e2e
-lint: backend-lint
-migrate-up: backend-migrate-up
-migrate-down: backend-migrate-down
-migrate-new: backend-migrate-new
-clean: backend-clean
+# =============================================================================
+# Maintenance
+# =============================================================================
+
+## Remove build artifacts, coverage files, and test binaries
+clean:
+	@echo "Cleaning build artifacts..."
+	@rm -rf backend/bin/
+	@rm -f backend/coverage.out
+	@rm -rf frontend/build/
+	@echo "Clean complete"
+
+# =============================================================================
+# Help
+# =============================================================================
+
+## Show this help message
+help:
+	@echo "Available commands:"
+	@echo ""
+	@echo "Development:"
+	@echo "  make dev          Run backend + frontend concurrently"
+	@echo "  make backend      Run backend dev server only"
+	@echo "  make frontend     Run frontend dev server only"
+	@echo ""
+	@echo "Build:"
+	@echo "  make build        Build backend binary to backend/bin/projek"
+	@echo "  make build-fe     Build frontend to frontend/build/"
+	@echo "  make start        Build and run production binary"
+	@echo ""
+	@echo "Testing:"
+	@echo "  make test         Run all unit tests (backend + frontend)"
+	@echo "  make test-be      Run backend unit tests"
+	@echo "  make test-fe      Run frontend tests"
+	@echo "  make test-e2e     Run backend E2E tests"
+	@echo ""
+	@echo "Code Quality:"
+	@echo "  make lint         Run all linters (backend + frontend)"
+	@echo "  make lint-be      Run golangci-lint on backend"
+	@echo "  make lint-fe      Run ESLint on frontend"
+	@echo ""
+	@echo "Database:"
+	@echo "  make migrate         Run pending migrations up"
+	@echo "  make migrate-down    Rollback last migration"
+	@echo "  make migrate-new     Create new migration (NAME=required)"
+	@echo "  make seed            Seed development database with test data"
+	@echo ""
+	@echo "Infrastructure:"
+	@echo "  make docker-up    Start Postgres, Redis, Prometheus"
+	@echo "  make docker-down  Stop Docker services"
+	@echo ""
+	@echo "Maintenance:"
+	@echo "  make clean        Remove build artifacts and coverage files"
