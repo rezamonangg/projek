@@ -18,6 +18,7 @@ type Repository interface {
 	Delete(ctx context.Context, id uuid.UUID) error
 	UpdateStatus(ctx context.Context, id uuid.UUID, status TaskStatus) error
 	UpdatePosition(ctx context.Context, id uuid.UUID, position int) error
+	Search(ctx context.Context, query string, limit int) ([]Task, error)
 }
 
 type PgxRepository struct {

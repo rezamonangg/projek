@@ -12,6 +12,7 @@ import (
 	"github.com/monachy/projek/internal/common"
 	"github.com/monachy/projek/internal/member"
 	"github.com/monachy/projek/internal/project"
+	"github.com/monachy/projek/internal/task"
 	"github.com/redis/go-redis/v9"
 	"github.com/rs/zerolog"
 )
@@ -56,12 +57,23 @@ func NewRouter(cfg *common.Config, logger zerolog.Logger, db *pgxpool.Pool, redi
 
 	epicHandler := project.NewEpicHandler(projectService)
 	boardHandler := project.NewBoardHandler(projectService)
+
+	taskRepo := task.NewRepository(db)
+	taskLabelRepo := task.NewLabelRepository(db)
+	taskService := task.NewService(taskRepo, taskLabelRepo)
+	taskHandler := task.NewHandler(taskService)
+
 	r.Route("/projects/{projectId}", func(r chi.Router) {
 		r.Mount("/epics", epicHandler.ProjectRoutes())
 		r.Mount("/boards", boardHandler.ProjectRoutes())
 	})
 	r.Mount("/epics", epicHandler.Routes())
 	r.Mount("/boards", boardHandler.Routes())
+
+	r.Route("/boards/{boardId}", func(r chi.Router) {
+		r.Mount("/tasks", taskHandler.BoardRoutes())
+	})
+	r.Mount("/tasks", taskHandler.Routes())
 
 	return r
 }
