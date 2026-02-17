@@ -64,6 +64,8 @@ projek/
    cp backend/.env.example backend/.env
    cp frontend/.env.example frontend/.env
    ```
+   
+   Note: Frontend uses `.env` for development and `.env.production` for production builds (handled automatically by SvelteKit).
 
 2. **Start infrastructure:**
    ```bash
