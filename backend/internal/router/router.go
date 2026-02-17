@@ -10,6 +10,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/monachy/projek/internal/auth"
 	"github.com/monachy/projek/internal/common"
+	"github.com/monachy/projek/internal/file"
 	"github.com/monachy/projek/internal/member"
 	"github.com/monachy/projek/internal/project"
 	"github.com/monachy/projek/internal/task"
@@ -73,15 +74,22 @@ func NewRouter(cfg *common.Config, logger zerolog.Logger, db *pgxpool.Pool, redi
 	wikiService := wiki.NewService(wikiRepo)
 	wikiHandler := wiki.NewHandler(wikiService)
 
+	fileRepo := file.NewRepository(db)
+	fileStorage := file.NewLocalStorage("/var/lib/projek/uploads", "/uploads")
+	fileService := file.NewService(fileRepo, fileStorage)
+	fileHandler := file.NewHandler(fileService)
+
 	r.Route("/projects/{projectId}", func(r chi.Router) {
 		r.Mount("/epics", epicHandler.ProjectRoutes())
 		r.Mount("/boards", boardHandler.ProjectRoutes())
 		r.Mount("/labels", labelHandler.ProjectRoutes())
 		r.Mount("/wiki", wikiHandler.ProjectRoutes())
+		r.Mount("/files", fileHandler.ProjectRoutes())
 	})
 	r.Mount("/epics", epicHandler.Routes())
 	r.Mount("/boards", boardHandler.Routes())
 	r.Mount("/wiki", wikiHandler.Routes())
+	r.Mount("/files", fileHandler.Routes())
 
 	r.Route("/boards/{boardId}", func(r chi.Router) {
 		r.Mount("/tasks", taskHandler.BoardRoutes())
