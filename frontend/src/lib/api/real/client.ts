@@ -85,7 +85,13 @@ class HttpClient {
 				return undefined as T;
 			}
 
-			return response.json();
+			const json = await response.json();
+			
+			if (json && typeof json === 'object' && 'data' in json) {
+				return json.data as T;
+			}
+			
+			return json as T;
 		} catch (error) {
 			if (error instanceof ApiError) {
 				throw error;

@@ -49,15 +49,15 @@ function createErrorResponse<T>(error: string, status: number): ApiResponse<T> {
 
 async function login(email: string, password: string): Promise<ApiResponse<{ user: User; token: string }>> {
 	try {
-		const response = await httpClient.post<{ data: LoginResponse }>('/auth/login', {
+		const response = await httpClient.post<LoginResponse>('/auth/login', {
 			email,
 			password
 		});
 		console.log('Raw API response:', response);
 
-		const user = toFrontendUser(response.data.member);
+		const user = toFrontendUser(response.member);
 		console.log('Converted user:', user);
-		return createResponse({ user, token: response.data.session_id });
+		return createResponse({ user, token: response.session_id });
 	} catch (err) {
 		console.error('Login error:', err);
 		const message = err instanceof Error ? err.message : 'Login failed';
@@ -76,8 +76,8 @@ async function logout(): Promise<ApiResponse<void>> {
 
 async function getCurrentUser(): Promise<ApiResponse<User>> {
 	try {
-		const response = await httpClient.get<{ data: BackendMember }>('/auth/me');
-		const user = toFrontendUser(response.data);
+		const response = await httpClient.get<BackendMember>('/auth/me');
+		const user = toFrontendUser(response);
 		return createResponse(user);
 	} catch (err) {
 		const message = err instanceof Error ? err.message : 'Not authenticated';

@@ -97,7 +97,7 @@ async function downloadFile(id: string): Promise<ApiResponse<Blob>> {
 	}
 }
 
-async function listAttachments(options: ListAttachmentsOptions): Promise<ApiResponse<Attachment[]>> {
+	async function listAttachments(options: ListAttachmentsOptions): Promise<ApiResponse<Attachment[]>> {
 	try {
 		const params = new URLSearchParams();
 		if (options.taskId) {
@@ -115,7 +115,8 @@ async function listAttachments(options: ListAttachmentsOptions): Promise<ApiResp
 			throw new Error(`Failed to list files: ${response.status}`);
 		}
 
-		const data = await response.json();
+		const json = await response.json();
+		const data = json.data || json;
 		const files = Array.isArray(data) ? data : data.items || [];
 		return createResponse(files.map(toFrontendAttachment));
 	} catch (err) {
