@@ -8,6 +8,51 @@ export default defineConfig({
 		proxy: {
 			'/api': {
 				target: 'http://localhost:8080',
+				changeOrigin: true,
+				rewrite: (path) => path.replace(/^\/api/, '')
+			},
+			'/auth': {
+				target: 'http://localhost:8080',
+				changeOrigin: true
+			},
+			'/projects': {
+				target: 'http://localhost:8080',
+				changeOrigin: true
+			},
+			'/boards': {
+				target: 'http://localhost:8080',
+				changeOrigin: true
+			},
+			'/tasks': {
+				target: 'http://localhost:8080',
+				changeOrigin: true
+			},
+			'/epics': {
+				target: 'http://localhost:8080',
+				changeOrigin: true
+			},
+			'/members': {
+				target: 'http://localhost:8080',
+				changeOrigin: true
+			},
+			'/wiki': {
+				target: 'http://localhost:8080',
+				changeOrigin: true
+			},
+			'/files': {
+				target: 'http://localhost:8080',
+				changeOrigin: true
+			},
+			'/admin': {
+				target: 'http://localhost:8080',
+				changeOrigin: true
+			},
+			'/health': {
+				target: 'http://localhost:8080',
+				changeOrigin: true
+			},
+			'/ready': {
+				target: 'http://localhost:8080',
 				changeOrigin: true
 			}
 		}
