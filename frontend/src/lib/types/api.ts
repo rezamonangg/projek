@@ -41,6 +41,7 @@ export interface Board {
 	description?: string;
 	projectId: string;
 	createdAt: string;
+	updatedAt: string;
 }
 
 export interface Task {

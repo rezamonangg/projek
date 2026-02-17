@@ -210,6 +210,7 @@ export interface IBoardsApi {
 	listBoards(projectId: string): Promise<ApiResponse<Board[]>>;
 	getBoard(id: string): Promise<ApiResponse<Board>>;
 	createBoard(input: CreateBoardInput): Promise<ApiResponse<Board>>;
+	deleteBoard(id: string): Promise<ApiResponse<void>>;
 }
 
 export interface ITasksApi {

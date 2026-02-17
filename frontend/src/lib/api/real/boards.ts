@@ -6,6 +6,7 @@ interface BackendBoard {
 	id: string;
 	project_id: string;
 	name: string;
+	description?: string;
 	created_at: string;
 	updated_at: string;
 }
@@ -14,8 +15,10 @@ function toFrontendBoard(board: BackendBoard): Board {
 	return {
 		id: board.id,
 		name: board.name,
+		description: board.description,
 		projectId: board.project_id,
-		createdAt: board.created_at
+		createdAt: board.created_at,
+		updatedAt: board.updated_at
 	};
 }
 
@@ -59,7 +62,8 @@ async function getBoard(id: string): Promise<ApiResponse<Board>> {
 async function createBoard(input: CreateBoardInput): Promise<ApiResponse<Board>> {
 	try {
 		const board = await httpClient.post<BackendBoard>(`/projects/${input.projectId}/boards`, {
-			name: input.name
+			name: input.name,
+			description: input.description
 		});
 		return createResponse(toFrontendBoard(board));
 	} catch (err) {
@@ -68,8 +72,19 @@ async function createBoard(input: CreateBoardInput): Promise<ApiResponse<Board>>
 	}
 }
 
+async function deleteBoard(id: string): Promise<ApiResponse<void>> {
+	try {
+		await httpClient.delete(`/boards/${id}`);
+		return createResponse(undefined);
+	} catch (err) {
+		const message = err instanceof Error ? err.message : 'Failed to delete board';
+		return createErrorResponse(message, 500);
+	}
+}
+
 export const realBoardsApi: IBoardsApi = {
 	listBoards,
 	getBoard,
-	createBoard
+	createBoard,
+	deleteBoard
 };
