@@ -6,6 +6,20 @@ Coding guidelines for AI agents working on this repository.
 
 Full-stack project management application with Go backend and SvelteKit frontend.
 
+## Workflow development based on docs/plan
+
+1. Take the plan from docs/plan
+2. Implement each document in plan as 1 task
+3. Make sure all unit test and build are working fine
+4. After point 3 success, move the plan to docs/archived
+5. Then commit in 1 single sentence
+
+## Workflow development based on request not docs/plan
+
+1. Analyze the request
+2. Make the plan, and add it in docs/plan
+3. Then follow "## Workflow development based on docs/plan" section
+
 **Stack:**
 - Backend: Go 1.25+ (Chi router, PostgreSQL via pgx, Redis, Zerolog)
 - Frontend: SvelteKit 2.x + Svelte 5 (runes), TypeScript 5.x, Tailwind CSS 4.x

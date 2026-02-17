@@ -84,7 +84,7 @@ func (r *PgxStatsRepository) GetDashboardStats(ctx context.Context, communityID 
 
 	err = r.db.QueryRow(ctx,
 		`SELECT COUNT(*), 
-			SUM(CASE WHEN status = 'done' THEN 1 ELSE 0 END)
+			COALESCE(SUM(CASE WHEN status = 'done' THEN 1 ELSE 0 END), 0)
 			FROM tasks t
 			JOIN boards b ON t.board_id = b.id
 			JOIN projects p ON b.project_id = p.id

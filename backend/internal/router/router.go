@@ -61,7 +61,6 @@ func NewRouter(cfg *common.Config, logger zerolog.Logger, db *pgxpool.Pool, redi
 	projectBoardRepo := project.NewBoardRepository(db)
 	projectService := project.NewService(projectRepo, projectEpicRepo, projectBoardRepo, nil, nil)
 	projectHandler := project.NewHandler(projectService)
-	r.Mount("/projects", projectHandler.Routes())
 
 	epicHandler := project.NewEpicHandler(projectService)
 	boardHandler := project.NewBoardHandler(projectService)
@@ -88,12 +87,19 @@ func NewRouter(cfg *common.Config, logger zerolog.Logger, db *pgxpool.Pool, redi
 	adminService := admin.NewService(adminSettingsRepo, adminStatsRepo)
 	adminHandler := admin.NewHandler(adminService)
 
-	r.Route("/projects/{projectId}", func(r chi.Router) {
-		r.Mount("/epics", epicHandler.ProjectRoutes())
-		r.Mount("/boards", boardHandler.ProjectRoutes())
-		r.Mount("/labels", labelHandler.ProjectRoutes())
-		r.Mount("/wiki", wikiHandler.ProjectRoutes())
-		r.Mount("/files", fileHandler.ProjectRoutes())
+	r.Route("/projects", func(r chi.Router) {
+		r.Get("/", projectHandler.List)
+		r.Post("/", projectHandler.Create)
+		r.Route("/{id}", func(r chi.Router) {
+			r.Get("/", projectHandler.Get)
+			r.Put("/", projectHandler.Update)
+			r.Delete("/", projectHandler.Delete)
+			r.Mount("/epics", epicHandler.ProjectRoutes())
+			r.Mount("/boards", boardHandler.ProjectRoutes())
+			r.Mount("/labels", labelHandler.ProjectRoutes())
+			r.Mount("/wiki", wikiHandler.ProjectRoutes())
+			r.Mount("/files", fileHandler.ProjectRoutes())
+		})
 	})
 	r.Mount("/epics", epicHandler.Routes())
 	r.Mount("/boards", boardHandler.Routes())
