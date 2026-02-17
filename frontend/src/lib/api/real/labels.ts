@@ -30,7 +30,7 @@ function toFrontendLabel(label: BackendLabel): Label {
 		id: label.id,
 		name: label.name,
 		color: label.color,
-		communityId: label.project_id
+		projectId: label.project_id
 	};
 }
 
@@ -78,7 +78,7 @@ async function listLabels(projectId: string): Promise<ApiResponse<Label[]>> {
 
 async function createLabel(input: CreateLabelInput): Promise<ApiResponse<Label>> {
 	try {
-		const label = await httpClient.post<BackendLabel>(`/projects/${input.communityId}/labels`, {
+		const label = await httpClient.post<BackendLabel>(`/projects/${input.projectId}/labels`, {
 			name: input.name,
 			color: input.color
 		});

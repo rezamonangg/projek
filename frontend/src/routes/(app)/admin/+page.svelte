@@ -51,7 +51,7 @@
 		const response = await labelsApi.createLabel({
 			name: labelName,
 			color: labelColor,
-			communityId: 'community-1'
+			projectId: 'project-1'
 		});
 		labelSaving = false;
 		if (response.data) {

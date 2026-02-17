@@ -62,7 +62,7 @@ export interface Label {
 	id: string;
 	name: string;
 	color: string;
-	communityId: string;
+	projectId: string;
 }
 
 export interface WikiPage {

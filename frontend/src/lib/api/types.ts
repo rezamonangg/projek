@@ -142,7 +142,7 @@ export interface MoveTaskInput {
 export interface CreateLabelInput {
 	name: string;
 	color: string;
-	communityId: string;
+	projectId: string;
 }
 
 export interface CreateWikiPageInput {
@@ -222,7 +222,7 @@ export interface ITasksApi {
 }
 
 export interface ILabelsApi {
-	listLabels(communityId: string): Promise<ApiResponse<Label[]>>;
+	listLabels(projectId: string): Promise<ApiResponse<Label[]>>;
 	createLabel(input: CreateLabelInput): Promise<ApiResponse<Label>>;
 	assignLabelToTask(taskId: string, labelId: string): Promise<ApiResponse<Task>>;
 }
