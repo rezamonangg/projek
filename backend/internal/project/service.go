@@ -164,6 +164,10 @@ func (s *Service) GetBoards(ctx context.Context, projectID uuid.UUID) ([]Board, 
 	return s.boardRepo.GetByProject(ctx, projectID)
 }
 
+func (s *Service) GetBoardByID(ctx context.Context, id uuid.UUID) (*Board, error) {
+	return s.boardRepo.GetByID(ctx, id)
+}
+
 func (s *Service) DeleteBoard(ctx context.Context, id uuid.UUID) error {
 	return s.boardRepo.Delete(ctx, id)
 }

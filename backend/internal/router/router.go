@@ -55,10 +55,13 @@ func NewRouter(cfg *common.Config, logger zerolog.Logger, db *pgxpool.Pool, redi
 	r.Mount("/projects", projectHandler.Routes())
 
 	epicHandler := project.NewEpicHandler(projectService)
+	boardHandler := project.NewBoardHandler(projectService)
 	r.Route("/projects/{projectId}", func(r chi.Router) {
 		r.Mount("/epics", epicHandler.ProjectRoutes())
+		r.Mount("/boards", boardHandler.ProjectRoutes())
 	})
 	r.Mount("/epics", epicHandler.Routes())
+	r.Mount("/boards", boardHandler.Routes())
 
 	return r
 }
