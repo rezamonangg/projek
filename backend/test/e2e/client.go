@@ -118,6 +118,56 @@ func ParseResponse(t *testing.T, resp *http.Response, target interface{}) {
 	require.NoError(t, err, "Failed to parse JSON response: %s", string(body))
 }
 
+func ParseDataResponse(t *testing.T, resp *http.Response) map[string]interface{} {
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	require.NoError(t, err, "Failed to read response body")
+
+	var apiResp struct {
+		Success bool                   `json:"success"`
+		Data    map[string]interface{} `json:"data"`
+		Error   *struct {
+			Code    string `json:"code"`
+			Message string `json:"message"`
+		} `json:"error"`
+	}
+
+	err = json.Unmarshal(body, &apiResp)
+	require.NoError(t, err, "Failed to parse JSON response: %s", string(body))
+
+	if apiResp.Error != nil {
+		t.Fatalf("API error: %s - %s", apiResp.Error.Code, apiResp.Error.Message)
+	}
+
+	return apiResp.Data
+}
+
+func ParseDataListResponse(t *testing.T, resp *http.Response) []map[string]interface{} {
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	require.NoError(t, err, "Failed to read response body")
+
+	var apiResp struct {
+		Success bool                     `json:"success"`
+		Data    []map[string]interface{} `json:"data"`
+		Error   *struct {
+			Code    string `json:"code"`
+			Message string `json:"message"`
+		} `json:"error"`
+	}
+
+	err = json.Unmarshal(body, &apiResp)
+	require.NoError(t, err, "Failed to parse JSON response: %s", string(body))
+
+	if apiResp.Error != nil {
+		t.Fatalf("API error: %s - %s", apiResp.Error.Code, apiResp.Error.Message)
+	}
+
+	return apiResp.Data
+}
+
 func ParseResponseBody(t *testing.T, resp *http.Response) string {
 	defer resp.Body.Close()
 
