@@ -56,6 +56,16 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	http.SetCookie(w, &http.Cookie{
+		Name:     "session_id",
+		Value:    session.ID,
+		Path:     "/",
+		HttpOnly: true,
+		Secure:   false,
+		SameSite: http.SameSiteLaxMode,
+		MaxAge:   7 * 24 * 60 * 60,
+	})
+
 	common.Success(w, http.StatusOK, LoginResponse{
 		SessionID: session.ID,
 		Member:    m,
@@ -67,6 +77,17 @@ func (h *Handler) Logout(w http.ResponseWriter, r *http.Request) {
 	if sessionID != "" {
 		h.authService.Logout(r.Context(), sessionID)
 	}
+
+	http.SetCookie(w, &http.Cookie{
+		Name:     "session_id",
+		Value:    "",
+		Path:     "/",
+		HttpOnly: true,
+		Secure:   false,
+		SameSite: http.SameSiteLaxMode,
+		MaxAge:   -1,
+	})
+
 	common.Success(w, http.StatusOK, nil)
 }
 
