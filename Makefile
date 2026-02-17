@@ -1,6 +1,6 @@
 # Project Makefile - Unified commands for backend (Go) and frontend (SvelteKit)
 
-.PHONY: dev backend frontend build build-fe start test test-be test-fe test-e2e lint lint-be lint-fe migrate migrate-down migrate-new seed docker-up docker-down clean help
+.PHONY: dev backend frontend build build-fe start test test-be test-fe test-e2e test-e2e-auth test-e2e-admin test-e2e-project lint lint-be lint-fe migrate migrate-down migrate-new seed docker-up docker-down clean help
 
 # =============================================================================
 # Development - Start services in development mode with hot reload
@@ -61,10 +61,25 @@ test-fe:
 	@echo "Running frontend tests..."
 	@cd frontend && npm test
 
-## Run backend E2E tests (requires database and services)
+## Run backend E2E tests (requires Docker for testcontainers)
 test-e2e:
-	@echo "Running backend E2E tests..."
-	@cd backend && go test -v -tags=e2e ./test/...
+	@echo "Running backend E2E tests (this may take a few minutes)..."
+	@cd backend && go test -v -tags=e2e -timeout 15m ./test/e2e/...
+
+## Run auth E2E tests only
+test-e2e-auth:
+	@echo "Running auth E2E tests..."
+	@cd backend && go test -v -tags=e2e -timeout 5m -run TestAuth ./test/e2e/...
+
+## Run admin E2E tests only
+test-e2e-admin:
+	@echo "Running admin E2E tests..."
+	@cd backend && go test -v -tags=e2e -timeout 5m -run TestAdmin ./test/e2e/...
+
+## Run project flow E2E tests only
+test-e2e-project:
+	@echo "Running project flow E2E tests..."
+	@cd backend && go test -v -tags=e2e -timeout 10m -run "Test(Project|Task|Epic|Board|Label)" ./test/e2e/...
 
 # =============================================================================
 # Code Quality
@@ -159,10 +174,13 @@ help:
 	@echo "  make start        Build and run production binary"
 	@echo ""
 	@echo "Testing:"
-	@echo "  make test         Run all unit tests (backend + frontend)"
-	@echo "  make test-be      Run backend unit tests"
-	@echo "  make test-fe      Run frontend tests"
-	@echo "  make test-e2e     Run backend E2E tests"
+	@echo "  make test            Run all unit tests (backend + frontend)"
+	@echo "  make test-be         Run backend unit tests"
+	@echo "  make test-fe         Run frontend tests"
+	@echo "  make test-e2e        Run all backend E2E tests (requires Docker)"
+	@echo "  make test-e2e-auth   Run auth E2E tests only"
+	@echo "  make test-e2e-admin  Run admin E2E tests only"
+	@echo "  make test-e2e-project Run project flow E2E tests only"
 	@echo ""
 	@echo "Code Quality:"
 	@echo "  make lint         Run all linters (backend + frontend)"
