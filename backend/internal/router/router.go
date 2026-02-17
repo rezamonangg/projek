@@ -39,17 +39,20 @@ func NewRouter(cfg *common.Config, logger zerolog.Logger, db *pgxpool.Pool, redi
 	}
 	r.Use(cors.Handler(corsOpts))
 
-	r.Get("/health", healthHandler)
-	r.Get("/ready", readinessHandler(db, redis))
-	r.Get("/health/detailed", detailedHealthHandler(db, redis))
-
 	memberRepo := member.NewRepository(db)
 	memberService := member.NewService(memberRepo)
 	memberHandler := member.NewHandler(memberService)
 
 	sessionStore := auth.NewSessionStore(redis, 7*24*time.Hour)
 	authService := auth.NewAuthService(memberRepo, sessionStore)
+	r.Use(auth.AuthMiddleware(authService))
+
 	authHandler := auth.NewHandler(authService, memberService)
+
+	r.Get("/health", healthHandler)
+	r.Get("/ready", readinessHandler(db, redis))
+	r.Get("/health/detailed", detailedHealthHandler(db, redis))
+
 	r.Mount("/auth", authHandler.Routes())
 	r.Mount("/members", memberHandler.Routes())
 
