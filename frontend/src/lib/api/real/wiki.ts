@@ -90,6 +90,7 @@ async function updateWikiPage(id: string, input: UpdateWikiPageInput): Promise<A
 	try {
 		const body: Record<string, unknown> = {};
 		if (input.title) body.title = input.title;
+		if (input.slug) body.slug = input.slug;
 		if (input.content) body.content = JSON.stringify(input.content);
 		if (input.parentId !== undefined) body.parent_id = input.parentId;
 
