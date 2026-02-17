@@ -42,11 +42,13 @@ func NewRouter(cfg *common.Config, logger zerolog.Logger, db *pgxpool.Pool, redi
 
 	memberRepo := member.NewRepository(db)
 	memberService := member.NewService(memberRepo)
+	memberHandler := member.NewHandler(memberService)
 
 	sessionStore := auth.NewSessionStore(redis, 7*24*time.Hour)
 	authService := auth.NewAuthService(memberRepo, sessionStore)
 	authHandler := auth.NewHandler(authService, memberService)
 	r.Mount("/auth", authHandler.Routes())
+	r.Mount("/members", memberHandler.Routes())
 
 	projectRepo := project.NewRepository(db)
 	projectEpicRepo := project.NewEpicRepository(db)
