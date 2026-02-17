@@ -35,13 +35,14 @@
 	];
 
 	async function loadBoard() {
+		if (!boardId || !projectId) return;
 		loading = true;
 		const [boardRes, tasksRes, membersRes, epicsRes, labelsRes] = await Promise.all([
 			boardsApi.getBoard(boardId),
 			tasksApi.listTasks(boardId),
 			membersApi.listMembers(),
 			epicsApi.listEpics(projectId),
-			labelsApi.listLabels('community-1')
+			labelsApi.listLabels(projectId)
 		]);
 
 		if (boardRes.data) board = boardRes.data;
@@ -91,7 +92,7 @@
 	}
 
 	async function handleCreate() {
-		if (!createTitle.trim()) return;
+		if (!createTitle.trim() || !boardId) return;
 
 		createLoading = true;
 		const response = await tasksApi.createTask({

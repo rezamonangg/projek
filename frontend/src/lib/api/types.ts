@@ -118,7 +118,7 @@ export interface CreateBoardInput {
 
 export interface CreateTaskInput {
 	title: string;
-	description: string;
+	description?: string;
 	boardId: string;
 	epicId?: string;
 	assigneeId?: string;

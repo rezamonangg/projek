@@ -13,6 +13,7 @@
 	const projectId = $derived($page.params.id);
 
 	async function loadProject() {
+		if (!projectId) return;
 		loading = true;
 		const [projectRes, boardsRes, epicsRes] = await Promise.all([
 			projectsApi.getProject(projectId),

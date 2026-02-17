@@ -17,6 +17,7 @@
 	let saving = $state(false);
 
 	async function loadPages() {
+		if (!projectId) return;
 		loading = true;
 		const response = await wikiApi.listWikiPages(projectId);
 		if (response.data) {
@@ -31,7 +32,7 @@
 	}
 
 	async function handleCreate() {
-		if (!createTitle.trim()) return;
+		if (!createTitle.trim() || !projectId) return;
 
 		createLoading = true;
 		const slug = createSlug || createTitle.toLowerCase().replace(/[^a-z0-9]+/g, '-');
