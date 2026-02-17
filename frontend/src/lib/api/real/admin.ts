@@ -87,7 +87,7 @@ async function updateCommunitySettings(input: UpdateCommunitySettingsInput): Pro
 
 async function getDashboardStats(): Promise<ApiResponse<DashboardStats>> {
 	try {
-		const stats = await httpClient.get<BackendDashboardStats>('/admin/dashboard');
+		const stats = await httpClient.get<BackendDashboardStats>('/admin/stats');
 		return createResponse(toFrontendStats(stats));
 	} catch (err) {
 		const message = err instanceof Error ? err.message : 'Failed to load dashboard stats';

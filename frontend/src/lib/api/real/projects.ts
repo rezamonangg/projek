@@ -79,7 +79,9 @@ async function getProject(id: string): Promise<ApiResponse<Project>> {
 
 async function createProject(input: CreateProjectInput): Promise<ApiResponse<Project>> {
 	try {
-		const key = input.name.substring(0, 3).toUpperCase();
+		const baseKey = input.name.replace(/[^a-zA-Z]/g, '').substring(0, 4).toUpperCase();
+		const suffix = Math.random().toString(36).substring(2, 5).toUpperCase();
+		const key = baseKey.padEnd(2, 'X').substring(0, 2) + suffix;
 		const project = await httpClient.post<BackendProject>('/projects', {
 			name: input.name,
 			description: input.description,
