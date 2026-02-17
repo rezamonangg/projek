@@ -11,6 +11,7 @@ import (
 	"github.com/monachy/projek/internal/auth"
 	"github.com/monachy/projek/internal/common"
 	"github.com/monachy/projek/internal/member"
+	"github.com/monachy/projek/internal/project"
 	"github.com/redis/go-redis/v9"
 	"github.com/rs/zerolog"
 )
@@ -45,6 +46,13 @@ func NewRouter(cfg *common.Config, logger zerolog.Logger, db *pgxpool.Pool, redi
 	authService := auth.NewAuthService(memberRepo, sessionStore)
 	authHandler := auth.NewHandler(authService, memberService)
 	r.Mount("/auth", authHandler.Routes())
+
+	projectRepo := project.NewRepository(db)
+	projectEpicRepo := project.NewEpicRepository(db)
+	projectBoardRepo := project.NewBoardRepository(db)
+	projectService := project.NewService(projectRepo, projectEpicRepo, projectBoardRepo, nil, nil)
+	projectHandler := project.NewHandler(projectService)
+	r.Mount("/projects", projectHandler.Routes())
 
 	return r
 }
