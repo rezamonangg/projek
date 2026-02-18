@@ -38,7 +38,7 @@ func TestWikiHandler_ListByProject_Success(t *testing.T) {
 	repo.EXPECT().GetByProject(gomock.Any(), testProjectID).Return(pages, nil)
 
 	req := httptest.NewRequest("GET", "/"+testProjectID.String()+"/wiki", nil)
-	req = withWikiChiURLParams(req, map[string]string{"projectId": testProjectID.String()})
+	req = withWikiChiURLParams(req, map[string]string{"id": testProjectID.String()})
 
 	rr := httptest.NewRecorder()
 	handler.ListByProject(rr, req)
@@ -58,7 +58,7 @@ func TestWikiHandler_Create_Success(t *testing.T) {
 	repo.EXPECT().Create(gomock.Any(), gomock.Any()).Return(nil)
 
 	req := httptest.NewRequest("POST", "/"+testProjectID.String()+"/wiki", strings.NewReader(body))
-	req = withWikiChiURLParams(req, map[string]string{"projectId": testProjectID.String()})
+	req = withWikiChiURLParams(req, map[string]string{"id": testProjectID.String()})
 	req.Header.Set("Content-Type", "application/json")
 
 	rr := httptest.NewRecorder()
@@ -73,7 +73,7 @@ func TestWikiHandler_Create_MissingTitle(t *testing.T) {
 	body := `{"content":"Content"}`
 
 	req := httptest.NewRequest("POST", "/"+testProjectID.String()+"/wiki", strings.NewReader(body))
-	req = withWikiChiURLParams(req, map[string]string{"projectId": testProjectID.String()})
+	req = withWikiChiURLParams(req, map[string]string{"id": testProjectID.String()})
 	req.Header.Set("Content-Type", "application/json")
 
 	rr := httptest.NewRecorder()

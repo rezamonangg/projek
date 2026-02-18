@@ -35,7 +35,7 @@ func (h *Handler) Routes() chi.Router {
 }
 
 func (h *Handler) ListByProject(w http.ResponseWriter, r *http.Request) {
-	projectIDStr := chi.URLParam(r, "projectId")
+	projectIDStr := chi.URLParam(r, "id")
 	projectID, err := uuid.Parse(projectIDStr)
 	if err != nil {
 		common.Error(w, http.StatusBadRequest, "INVALID_PROJECT_ID", "invalid project id")
@@ -52,7 +52,7 @@ func (h *Handler) ListByProject(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
-	projectIDStr := chi.URLParam(r, "projectId")
+	projectIDStr := chi.URLParam(r, "id")
 	projectID, err := uuid.Parse(projectIDStr)
 	if err != nil {
 		common.Error(w, http.StatusBadRequest, "INVALID_PROJECT_ID", "invalid project id")
