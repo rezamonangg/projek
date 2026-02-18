@@ -20,6 +20,7 @@ func TestAuthService_Login(t *testing.T) {
 
 	mockMemberRepo := member.NewMockRepository(ctrl)
 	mockSessionStore := NewMockSessionStore(ctrl)
+	mockSessionStore.EXPECT().TTL().Return(24 * time.Hour)
 	svc := NewAuthService(mockMemberRepo, mockSessionStore)
 
 	ctx := context.Background()
@@ -54,6 +55,7 @@ func TestAuthService_Login_MemberNotFound(t *testing.T) {
 
 	mockMemberRepo := member.NewMockRepository(ctrl)
 	mockSessionStore := NewMockSessionStore(ctrl)
+	mockSessionStore.EXPECT().TTL().Return(24 * time.Hour)
 	svc := NewAuthService(mockMemberRepo, mockSessionStore)
 
 	ctx := context.Background()
@@ -74,6 +76,7 @@ func TestAuthService_Login_InactiveMember(t *testing.T) {
 
 	mockMemberRepo := member.NewMockRepository(ctrl)
 	mockSessionStore := NewMockSessionStore(ctrl)
+	mockSessionStore.EXPECT().TTL().Return(24 * time.Hour)
 	svc := NewAuthService(mockMemberRepo, mockSessionStore)
 
 	ctx := context.Background()
@@ -100,6 +103,7 @@ func TestAuthService_Login_InvalidPassword(t *testing.T) {
 
 	mockMemberRepo := member.NewMockRepository(ctrl)
 	mockSessionStore := NewMockSessionStore(ctrl)
+	mockSessionStore.EXPECT().TTL().Return(24 * time.Hour)
 	svc := NewAuthService(mockMemberRepo, mockSessionStore)
 
 	ctx := context.Background()
@@ -132,6 +136,7 @@ func TestAuthService_Login_SessionStoreError(t *testing.T) {
 
 	mockMemberRepo := member.NewMockRepository(ctrl)
 	mockSessionStore := NewMockSessionStore(ctrl)
+	mockSessionStore.EXPECT().TTL().Return(24 * time.Hour)
 	svc := NewAuthService(mockMemberRepo, mockSessionStore)
 
 	ctx := context.Background()
@@ -163,6 +168,7 @@ func TestAuthService_Logout(t *testing.T) {
 
 	mockMemberRepo := member.NewMockRepository(ctrl)
 	mockSessionStore := NewMockSessionStore(ctrl)
+	mockSessionStore.EXPECT().TTL().Return(24 * time.Hour)
 	svc := NewAuthService(mockMemberRepo, mockSessionStore)
 
 	ctx := context.Background()
@@ -181,6 +187,7 @@ func TestAuthService_ValidateSession(t *testing.T) {
 
 	mockMemberRepo := member.NewMockRepository(ctrl)
 	mockSessionStore := NewMockSessionStore(ctrl)
+	mockSessionStore.EXPECT().TTL().Return(24 * time.Hour)
 	svc := NewAuthService(mockMemberRepo, mockSessionStore)
 
 	ctx := context.Background()
@@ -206,6 +213,7 @@ func TestAuthService_ValidateSession_Error(t *testing.T) {
 
 	mockMemberRepo := member.NewMockRepository(ctrl)
 	mockSessionStore := NewMockSessionStore(ctrl)
+	mockSessionStore.EXPECT().TTL().Return(24 * time.Hour)
 	svc := NewAuthService(mockMemberRepo, mockSessionStore)
 
 	ctx := context.Background()
@@ -226,6 +234,7 @@ func TestAuthService_GetMemberBySession(t *testing.T) {
 
 	mockMemberRepo := member.NewMockRepository(ctrl)
 	mockSessionStore := NewMockSessionStore(ctrl)
+	mockSessionStore.EXPECT().TTL().Return(24 * time.Hour)
 	svc := NewAuthService(mockMemberRepo, mockSessionStore)
 
 	ctx := context.Background()

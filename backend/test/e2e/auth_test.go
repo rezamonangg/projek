@@ -196,3 +196,42 @@ func TestAuth_Login_AndAccessProtectedEndpoint(t *testing.T) {
 	t.Logf("Protected endpoint status: %d", resp2.StatusCode)
 	assert.Equal(t, http.StatusOK, resp2.StatusCode, "Should be able to access protected endpoint after login")
 }
+
+func TestAuth_Login_SetsCorrectCookieAttributes(t *testing.T) {
+	env := SetupTestEnv(t)
+	defer env.Cleanup()
+
+	ctx := context.Background()
+
+	err := env.ExecDB(ctx, `
+		INSERT INTO communities (id, name, slug, created_at, updated_at)
+		VALUES ($1, $2, $3, NOW(), NOW())
+	`, fixtures.CommunityID, "Test Community", "test-community")
+	require.NoError(t, err)
+
+	passwordHash := "$2a$10$sKr8GxHBJAbOdab9Ma.6NOVV9XFORV6bKg1VOpH1guE7rlv4SucO."
+	err = env.ExecDB(ctx, `
+		INSERT INTO members (id, community_id, email, password_hash, first_name, last_name, role, is_active, created_at, updated_at)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW(), NOW())
+	`, fixtures.MemberID, fixtures.CommunityID, "admin@test.com", passwordHash, "Admin", "User", "admin", true)
+	require.NoError(t, err)
+
+	loginInput := fixtures.E2ENewLoginInput("admin@test.com", "password123")
+
+	resp, err := env.Client.Post("/auth/login", loginInput)
+	require.NoError(t, err)
+	defer resp.Body.Close()
+
+	require.Equal(t, http.StatusOK, resp.StatusCode)
+
+	sessionCookie := env.Client.GetSessionCookie()
+	require.NotNil(t, sessionCookie, "Session cookie should be set after login")
+
+	assert.Equal(t, "session_id", sessionCookie.Name)
+	assert.NotEmpty(t, sessionCookie.Value, "Session cookie should have a value")
+	assert.False(t, sessionCookie.Secure, "Test config uses Secure=false")
+
+	setCookieHeader := resp.Header.Get("Set-Cookie")
+	assert.Contains(t, setCookieHeader, "HttpOnly", "Cookie should be HttpOnly")
+	assert.Contains(t, setCookieHeader, "SameSite=Lax", "Test config uses SameSite=lax")
+}

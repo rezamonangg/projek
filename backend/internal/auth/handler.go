@@ -2,6 +2,7 @@ package auth
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/monachy/projek/internal/common"
@@ -11,12 +12,25 @@ import (
 type Handler struct {
 	authService   *AuthService
 	memberService *member.Service
+	cookieCfg     common.CookieConfig
 }
 
-func NewHandler(authService *AuthService, memberService *member.Service) *Handler {
+func NewHandler(authService *AuthService, memberService *member.Service, cookieCfg common.CookieConfig) *Handler {
 	return &Handler{
 		authService:   authService,
 		memberService: memberService,
+		cookieCfg:     cookieCfg,
+	}
+}
+
+func parseSameSite(s string) http.SameSite {
+	switch strings.ToLower(s) {
+	case "strict":
+		return http.SameSiteStrictMode
+	case "none":
+		return http.SameSiteNoneMode
+	default:
+		return http.SameSiteLaxMode
 	}
 }
 
@@ -61,9 +75,10 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 		Value:    session.ID,
 		Path:     "/",
 		HttpOnly: true,
-		Secure:   false,
-		SameSite: http.SameSiteLaxMode,
-		MaxAge:   7 * 24 * 60 * 60,
+		Secure:   h.cookieCfg.Secure,
+		Domain:   h.cookieCfg.Domain,
+		SameSite: parseSameSite(h.cookieCfg.SameSite),
+		MaxAge:   int(h.authService.GetSessionTTL().Seconds()),
 	})
 
 	common.Success(w, http.StatusOK, LoginResponse{
@@ -83,8 +98,9 @@ func (h *Handler) Logout(w http.ResponseWriter, r *http.Request) {
 		Value:    "",
 		Path:     "/",
 		HttpOnly: true,
-		Secure:   false,
-		SameSite: http.SameSiteLaxMode,
+		Secure:   h.cookieCfg.Secure,
+		Domain:   h.cookieCfg.Domain,
+		SameSite: parseSameSite(h.cookieCfg.SameSite),
 		MaxAge:   -1,
 	})
 

@@ -28,6 +28,7 @@ type SessionStore interface {
 	Get(ctx context.Context, sessionID string) (*Session, error)
 	Delete(ctx context.Context, sessionID string) error
 	DeleteByMemberID(ctx context.Context, memberID uuid.UUID) error
+	TTL() time.Duration
 }
 
 type RedisSessionStore struct {
@@ -37,6 +38,10 @@ type RedisSessionStore struct {
 
 func NewSessionStore(client *redis.Client, ttl time.Duration) SessionStore {
 	return &RedisSessionStore{client: client, ttl: ttl}
+}
+
+func (s *RedisSessionStore) TTL() time.Duration {
+	return s.ttl
 }
 
 func (s *RedisSessionStore) Create(ctx context.Context, session *Session) error {
@@ -95,13 +100,19 @@ func (s *RedisSessionStore) DeleteByMemberID(ctx context.Context, memberID uuid.
 type AuthService struct {
 	memberRepo   member.Repository
 	sessionStore SessionStore
+	sessionTTL   time.Duration
 }
 
 func NewAuthService(memberRepo member.Repository, sessionStore SessionStore) *AuthService {
 	return &AuthService{
 		memberRepo:   memberRepo,
 		sessionStore: sessionStore,
+		sessionTTL:   sessionStore.TTL(),
 	}
+}
+
+func (s *AuthService) GetSessionTTL() time.Duration {
+	return s.sessionTTL
 }
 
 func (s *AuthService) Login(ctx context.Context, email, password string) (*Session, *member.Member, error) {

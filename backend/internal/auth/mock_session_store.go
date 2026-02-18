@@ -12,6 +12,7 @@ package auth
 import (
 	context "context"
 	reflect "reflect"
+	time "time"
 
 	uuid "github.com/google/uuid"
 	gomock "go.uber.org/mock/gomock"
@@ -96,4 +97,18 @@ func (m *MockSessionStore) Get(ctx context.Context, sessionID string) (*Session,
 func (mr *MockSessionStoreMockRecorder) Get(ctx, sessionID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockSessionStore)(nil).Get), ctx, sessionID)
+}
+
+// TTL mocks base method.
+func (m *MockSessionStore) TTL() time.Duration {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TTL")
+	ret0, _ := ret[0].(time.Duration)
+	return ret0
+}
+
+// TTL indicates an expected call of TTL.
+func (mr *MockSessionStoreMockRecorder) TTL() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TTL", reflect.TypeOf((*MockSessionStore)(nil).TTL))
 }

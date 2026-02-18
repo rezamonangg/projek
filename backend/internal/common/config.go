@@ -3,6 +3,7 @@ package common
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/go-playground/validator/v10"
@@ -18,6 +19,18 @@ type Config struct {
 	Redis    RedisConfig    `validate:"required"`
 	Auth     AuthConfig     `validate:"required"`
 	Email    EmailConfig    `validate:"required"`
+	CORS     CORSConfig
+	Cookie   CookieConfig
+}
+
+type CORSConfig struct {
+	AllowedOrigins []string
+}
+
+type CookieConfig struct {
+	Secure   bool
+	Domain   string
+	SameSite string
 }
 
 type ServerConfig struct {
@@ -100,6 +113,14 @@ func LoadConfig() *Config {
 			FromEmail: "noreply@projek.local",
 			FromName:  "Projek",
 		},
+		CORS: CORSConfig{
+			AllowedOrigins: []string{"http://localhost:5173", "http://localhost:3000"},
+		},
+		Cookie: CookieConfig{
+			Secure:   false,
+			Domain:   "",
+			SameSite: "lax",
+		},
 	}
 
 	viper.RegisterAlias("server.port", "PORT")
@@ -112,7 +133,20 @@ func LoadConfig() *Config {
 	viper.RegisterAlias("redis.port", "REDIS_PORT")
 	viper.RegisterAlias("redis.password", "REDIS_PASSWORD")
 
+	viper.RegisterAlias("cors.allowed_origins", "CORS_ORIGINS")
+	viper.RegisterAlias("cookie.secure", "COOKIE_SECURE")
+	viper.RegisterAlias("cookie.domain", "COOKIE_DOMAIN")
+	viper.RegisterAlias("cookie.same_site", "COOKIE_SAMESITE")
+
 	viper.Unmarshal(cfg)
+
+	if origins := viper.GetString("cors.allowed_origins"); origins != "" {
+		cfg.CORS.AllowedOrigins = strings.Split(origins, ",")
+	}
+
+	if cfg.Cookie.SameSite == "none" && !cfg.Cookie.Secure {
+		panic("SameSite=none requires Secure=true")
+	}
 
 	return cfg
 }

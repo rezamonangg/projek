@@ -30,7 +30,7 @@ func NewRouter(cfg *common.Config, logger zerolog.Logger, db *pgxpool.Pool, redi
 	r.Use(common.RequestLogger(logger))
 
 	corsOpts := cors.Options{
-		AllowedOrigins:   []string{"http://localhost:3000", "http://localhost:5173", "http://localhost:8080"},
+		AllowedOrigins:   cfg.CORS.AllowedOrigins,
 		AllowedMethods:   []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
 		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
 		ExposedHeaders:   []string{"Link"},
@@ -43,11 +43,11 @@ func NewRouter(cfg *common.Config, logger zerolog.Logger, db *pgxpool.Pool, redi
 	memberService := member.NewService(memberRepo)
 	memberHandler := member.NewHandler(memberService)
 
-	sessionStore := auth.NewSessionStore(redis, 7*24*time.Hour)
+	sessionStore := auth.NewSessionStore(redis, cfg.Auth.SessionTTL)
 	authService := auth.NewAuthService(memberRepo, sessionStore)
 	r.Use(auth.AuthMiddleware(authService))
 
-	authHandler := auth.NewHandler(authService, memberService)
+	authHandler := auth.NewHandler(authService, memberService, cfg.Cookie)
 
 	r.Get("/health", healthHandler)
 	r.Get("/ready", readinessHandler(db, redis))

@@ -115,6 +115,14 @@ func SetupTestEnvWithSuffix(t *testing.T, suffix string) *TestEnv {
 			FromEmail: "test@localhost",
 			FromName:  "Test",
 		},
+		CORS: common.CORSConfig{
+			AllowedOrigins: []string{"http://localhost:5173"},
+		},
+		Cookie: common.CookieConfig{
+			Secure:   false,
+			Domain:   "",
+			SameSite: "lax",
+		},
 	}
 
 	logger := zerolog.Nop()
