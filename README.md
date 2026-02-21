@@ -1,53 +1,186 @@
 # Projek
 
-Full-stack project management application with Go backend and SvelteKit frontend.
+> Full-stack project management application with Go backend and SvelteKit frontend.
+
+[![Go](https://img.shields.io/badge/Go-1.25+-00ADD8?style=flat-square&logo=go)](https://go.dev/)
+[![SvelteKit](https://img.shields.io/badge/SvelteKit-2.x-FF3E00?style=flat-square&logo=svelte)](https://kit.svelte.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15+-4169E1?style=flat-square&logo=postgresql)](https://www.postgresql.org/)
+[![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)](LICENSE)
+
+---
+
+## Quick Start
+
+```bash
+# 1. Setup environment
+cp backend/.env.example backend/.env
+cp frontend/.env.example frontend/.env
+
+# 2. Start infrastructure (Postgres, Redis)
+make docker-up
+
+# 3. Run migrations
+make migrate
+
+# 4. Start development servers
+make dev
+```
+
+That's it. Backend runs on `:8080`, frontend on `:5173`.
+
+---
 
 ## Tech Stack
 
-**Backend:**
-- Go 1.25+ with Chi router
-- PostgreSQL (via pgx)
-- Redis for caching/sessions
-- dbmate for migrations
-- golangci-lint for linting
+| Layer | Technologies |
+|-------|-------------|
+| **Backend** | Go 1.25+, Chi router, pgx (PostgreSQL), Redis, Zerolog |
+| **Frontend** | SvelteKit 2.x, Svelte 5 (runes), TypeScript 5.x, Tailwind CSS 4.x |
+| **Infrastructure** | Docker Compose (Postgres 15, Redis 7, Prometheus) |
+| **Tools** | dbmate (migrations), golangci-lint, Playwright (E2E) |
 
-**Frontend:**
-- SvelteKit 2.x + Svelte 5 (runes)
-- TypeScript 5.x
-- Tailwind CSS 4.x
-- Playwright for E2E testing
-
-**Infrastructure:**
-- Docker Compose (Postgres, Redis, Prometheus)
+---
 
 ## Project Structure
 
 ```
 projek/
-├── backend/              # Go backend
+├── backend/                 # Go API server
 │   ├── cmd/
-│   │   ├── api/         # Main API server entrypoint
-│   │   └── seed/        # Database seeding utility
-│   ├── internal/        # Internal packages
-│   │   ├── auth/        # Authentication handlers
-│   │   ├── common/      # Shared utilities (logger, responses)
-│   │   ├── member/      # Member domain (handlers, service, repository)
-│   │   └── middleware/  # HTTP middleware
-│   ├── migrations/      # Database migrations (dbmate)
-│   ├── test/           # E2E tests
-│   └── go.mod
-├── frontend/           # SvelteKit frontend
+│   │   ├── api/            # Entry point
+│   │   └── seed/           # DB seeding
+│   ├── internal/           # Domain packages
+│   │   ├── auth/           # Authentication
+│   │   ├── member/         # Member domain
+│   │   ├── common/         # Shared utilities
+│   │   └── middleware/     # HTTP middleware
+│   ├── migrations/         # dbmate migrations
+│   └── test/              # E2E tests
+├── frontend/              # SvelteKit app
 │   ├── src/
-│   │   ├── lib/        # Shared components, utilities, API clients
-│   │   ├── routes/     # SvelteKit routes
-│   │   └── app.html    # HTML template
-│   ├── static/         # Static assets
-│   ├── tests/          # Playwright tests
-│   └── package.json
-├── docs/               # Documentation
-├── docker-compose.yml  # Docker services
-└── Makefile           # Unified commands
+│   │   ├── lib/           # Components, API, utilities
+│   │   └── routes/        # Page routes
+│   └── tests/             # Playwright tests
+├── docs/                  # Documentation
+├── docker-compose.yml     # Services definition
+└── Makefile              # Unified commands
 ```
+
+---
+
+## Commands
+
+### Development
+
+| Command | Description |
+|---------|-------------|
+| `make dev` | Start backend + frontend with hot reload |
+| `make backend` | Run backend only |
+| `make frontend` | Run frontend only |
+
+### Build & Deploy
+
+| Command | Description |
+|---------|-------------|
+| `make build` | Build backend binary to `backend/bin/projek` |
+| `make build-fe` | Build frontend to `frontend/build/` |
+| `make start` | Run production binary |
+
+### Testing
+
+| Command | Description |
+|---------|-------------|
+| `make test` | Run all unit tests (backend + frontend) |
+| `make test-be` | Backend tests with race detection & coverage |
+| `make test-fe` | Frontend tests |
+| `make test-e2e` | E2E tests (requires running DB) |
+
+### Code Quality
+
+| Command | Description |
+|---------|-------------|
+| `make lint` | Run all linters |
+| `make lint-be` | golangci-lint |
+| `make lint-fe` | ESLint |
+
+### Database
+
+| Command | Description |
+|---------|-------------|
+| `make migrate` | Apply pending migrations |
+| `make migrate-down` | Rollback last migration |
+| `make migrate-new NAME=x` | Create new migration |
+| `make seed` | Seed development data |
+
+### Infrastructure
+
+| Command | Description |
+|---------|-------------|
+| `make docker-up` | Start Postgres, Redis, Prometheus |
+| `make docker-db` | Start only Postgres + Redis |
+| `make docker-down` | Stop all services |
+
+---
+
+## Architecture
+
+### Backend (Clean Architecture)
+
+Each domain follows layered separation:
+
+```
+internal/member/
+├── handler.go      # HTTP handlers (I/O)
+├── service.go      # Business logic
+├── repository.go   # Database operations
+└── model.go        # Domain models
+```
+
+**Flow:** `HTTP Request → Handler → Service → Repository → Database`
+
+### Frontend (SvelteKit)
+
+- **Routes**: File-based routing in `src/routes/`
+- **API**: Centralized clients in `src/lib/api/`
+- **Components**: Reusable UI in `src/lib/components/`
+- **State**: Svelte 5 runes (`$state`, `$derived`, `$effect`)
+
+---
+
+## Development Workflow
+
+### Add a New Feature
+
+1. **Create migration** (if schema changes):
+   ```bash
+   make migrate-new NAME=add_feature_table
+   make migrate
+   ```
+
+2. **Implement backend**:
+   - Add domain in `backend/internal/<domain>/`
+   - Follow: handler → service → repository
+   - Write tests in `*_test.go`
+
+3. **Implement frontend**:
+   - Add API client in `frontend/src/lib/api/`
+   - Create components in `frontend/src/lib/components/`
+   - Add routes in `frontend/src/routes/`
+
+4. **Verify**:
+   ```bash
+   make lint
+   make test
+   ```
+
+### Reset Database
+
+```bash
+make migrate-down && make migrate && make seed
+```
+
+---
 
 ## Prerequisites
 
@@ -57,176 +190,23 @@ projek/
 - dbmate (`brew install dbmate`)
 - golangci-lint (`brew install golangci-lint`)
 
-## Quick Start
-
-1. **Copy environment files:**
-   ```bash
-   cp backend/.env.example backend/.env
-   cp frontend/.env.example frontend/.env
-   ```
-   
-   Note: Frontend uses `.env` for development and `.env.production` for production builds (handled automatically by SvelteKit).
-
-2. **Start infrastructure:**
-   ```bash
-
-   # for complete infra
-   make docker-up
-
-   # for redis and postgres only
-   make docker-db
-   ```
-
-3. **Run database migrations:**
-   ```bash
-   make migrate
-   ```
-
-4. **Start development servers:**
-   ```bash
-   make dev
-   ```
-   This runs both backend and frontend concurrently with hot reload.
-
-## Makefile Commands
-
-### Development
-
-| Command | Description |
-|---------|-------------|
-| `make dev` | Run backend + frontend concurrently with hot reload |
-| `make backend` | Run backend dev server only (`go run ./cmd/api`) |
-| `make frontend` | Run frontend dev server only (`npm run dev`) |
-
-### Build
-
-| Command | Description |
-|---------|-------------|
-| `make build` | Build backend binary to `backend/bin/projek` |
-| `make build-fe` | Build frontend for production (outputs to `frontend/build/`) |
-| `make start` | Build and run production backend binary |
-
-### Testing
-
-| Command | Description |
-|---------|-------------|
-| `make test` | Run ALL unit tests (backend + frontend) |
-| `make test-be` | Run backend unit tests with race detector and coverage |
-| `make test-fe` | Run frontend tests |
-| `make test-e2e` | Run backend E2E tests (requires database) |
-
-### Code Quality
-
-| Command | Description |
-|---------|-------------|
-| `make lint` | Run ALL linters (backend + frontend) |
-| `make lint-be` | Run golangci-lint on backend |
-| `make lint-fe` | Run ESLint on frontend |
-
-### Database
-
-| Command | Description |
-|---------|-------------|
-| `make migrate` | Run all pending database migrations up |
-| `make migrate-down` | Rollback the last database migration |
-| `make migrate-new NAME=create_users` | Create a new migration file |
-| `make seed` | Seed development database with test data |
-
-### Infrastructure
-
-| Command | Description |
-|---------|-------------|
-| `make docker-up` | Start Postgres, Redis, Prometheus in Docker |
-| `make docker-db` | Start only Postgres and Redis (no Prometheus) |
-| `make docker-down` | Stop Docker services |
-
-### Maintenance
-
-| Command | Description |
-|---------|-------------|
-| `make clean` | Remove build artifacts and coverage files |
-| `make help` | Show all available commands |
-
-## Development Workflow
-
-### Adding a Feature
-
-1. Create database migration (if needed):
-   ```bash
-   make migrate-new NAME=add_user_roles
-   make migrate
-   ```
-
-2. Implement backend:
-   - Add domain logic in `backend/internal/<domain>/`
-   - Follow existing patterns (handler → service → repository)
-   - Add tests in `*_test.go` files
-
-3. Implement frontend:
-   - Add API client in `frontend/src/lib/api/`
-   - Create components in `frontend/src/lib/components/`
-   - Add routes in `frontend/src/routes/`
-
-4. Run tests:
-   ```bash
-   make test
-   make lint
-   ```
-
-### Common Tasks
-
-**Reset database:**
-```bash
-make migrate-down  # Rollback
-make migrate       # Re-apply
-make seed          # Seed data
-```
-
-**Run only backend tests:**
-```bash
-make test-be
-```
-
-**Check code before commit:**
-```bash
-make lint
-make test
-```
-
-## Architecture
-
-### Backend (Clean Architecture)
-
-Each domain follows a layered approach:
-
-```
-internal/member/
-├── handler.go      # HTTP handlers (input/output)
-├── service.go      # Business logic
-├── repository.go   # Database operations
-└── model.go        # Domain models
-```
-
-**Request flow:** HTTP Request → Handler → Service → Repository → Database
-
-### Frontend (SvelteKit)
-
-- **Routes**: File-based routing in `src/routes/`
-- **API Clients**: Centralized in `src/lib/api/`
-- **Components**: Reusable UI in `src/lib/components/`
-- **State**: Svelte 5 runes (`$state`, `$derived`, `$effect`)
+---
 
 ## Environment Variables
 
-See `.env.example` files in `backend/` and `frontend/` directories for required variables.
+See `.env.example` files in `backend/` and `frontend/` directories.
+
+---
 
 ## Contributing
 
-1. Follow existing code style (see AGENTS.md for detailed guidelines)
+1. Follow code style (see [AGENTS.md](AGENTS.md))
 2. Write tests for new features
-3. Run `make lint` and `make test` before committing
-4. Use conventional commit messages
+3. Run `make lint && make test` before committing
+4. Use conventional commits (`feat:`, `fix:`, `docs:`)
+
+---
 
 ## License
 
-[Your License Here]
+[MIT](LICENSE)
